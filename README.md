@@ -4,15 +4,15 @@ Zadanie rekrutacyjne CUT - cpu usage tracker
 Michał Kukowski
 Kwiecień 2021
 1 Wymagania:
-• Projekt musi zostać napisany w języku C. W standardzie C99 lub wyższym. Przy czym należy napisać
+- Projekt musi zostać napisany w języku C. W standardzie C99 lub wyższym. Przy czym należy napisać
 kod tak, aby dało się go skompilować za pomocą gcc jak i clang. Kompilacja nie może zawierać ostrzeżeń!
 (dla clang flaga -Weverything, dla gcc przynajmniej -Wall -Wextra),
-• Projekt musi posiadać system budowania, najlepiej oparty na Makefile lub CMake. System powinien
+- Projekt musi posiadać system budowania, najlepiej oparty na Makefile lub CMake. System powinien
 wspierać dynamiczne zmiany kompilatora (czytanie zmiennej środowiskowej CC).
-• Projekt musi posiadać system kontroli wersji, najlepiej git. Należy zamieścić ”ładną” historię commitów,
+- Projekt musi posiadać system kontroli wersji, najlepiej git. Należy zamieścić ”ładną” historię commitów,
 tak aby pokazać proces powstawania aplikacji,
-• Aplikacja musi działać poprawnie na dowolnej distrybucji linuxa - np Ubuntu, Arch, Fedora, Debian,
-• Aplikacja musi zostać przetestowana pod kątem wycieków pamięci, do tego należy użyć programu
+- Aplikacja musi działać poprawnie na dowolnej distrybucji linuxa - np Ubuntu, Arch, Fedora, Debian,
+- Aplikacja musi zostać przetestowana pod kątem wycieków pamięci, do tego należy użyć programu
 valgrind
 2 Opis zadania
 Twoim zadaniem jest napisanie prostej aplikacji konsolowej do śledzenia zużycia procesora.
