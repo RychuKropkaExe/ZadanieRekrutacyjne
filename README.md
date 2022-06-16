@@ -3,7 +3,7 @@
 Zadanie rekrutacyjne CUT - cpu usage tracker
 Michał Kukowski
 Kwiecień 2021
-1 Wymagania
+1 Wymagania:
 • Projekt musi zostać napisany w języku C. W standardzie C99 lub wyższym. Przy czym należy napisać
 kod tak, aby dało się go skompilować za pomocą gcc jak i clang. Kompilacja nie może zawierać ostrzeżeń!
 (dla clang flaga -Weverything, dla gcc przynajmniej -Wall -Wextra),
