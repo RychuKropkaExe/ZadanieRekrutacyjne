@@ -1,4 +1,3 @@
-./build/*.o
-./build/*.d
-./src/*.o
-./src/*.c
+**/*.d
+**/*.o
+build/*.o
