@@ -41,7 +41,7 @@ LIB_PATH :=
 LIB :=
 
 # EXEC
-EXEC := main.out
+EXEC := tracker
 
 # COMPILATOR SECTION
 
