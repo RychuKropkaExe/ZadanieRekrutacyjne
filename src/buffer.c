@@ -9,8 +9,8 @@
 
 //Buffer przechowuje paczki wysyłane od readera do analyzera
 // Zakładamy maksymalny rozmiar każdej z liczb z /proc/stat na 8 bajtów, czyli może mieć maksymalnie
-// 20 znaków, dodając do tego string zawierający nazwe cpu, spacje itd zaokrąglamy do 250 charów
-#define PACK_SIZE 250
+// 20 znaków, dodając do tego string zawierający nazwe cpu, spacje itd zaokrąglamy do 256 charów
+#define PACK_SIZE 256
 
 //Wrapper na paczke od analyzera do printera
 typedef struct Pack
@@ -50,13 +50,13 @@ char* Pack_get_content(Pack* pc);
 Buffer* Buffer_create(size_t buffer_size)
 {
 
-    Buffer* buffer = malloc(sizeof(*buffer) + sizeof(Pack)*buffer_size);
+    Buffer* buffer = malloc(sizeof(*buffer) + sizeof(Pack)*buffer_size*6);
     if (buffer == NULL)
         return NULL;
     buffer->size = 0;
     buffer->head = 0;
     buffer->tail = 0;
-    buffer->max_size = buffer_size;
+    buffer->max_size = buffer_size*6;
     pthread_mutex_init(&(buffer->mutex),NULL);
     pthread_cond_init(&(buffer->can_consume), NULL);
     pthread_cond_init(&(buffer->can_produce), NULL);
