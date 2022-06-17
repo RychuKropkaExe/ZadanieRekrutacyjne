@@ -13,18 +13,18 @@
 #define MAX_SIZE 256
 
 typedef struct Reader{
-    size_t time_interv;
+    double time_interv;
     int core_quantity;
 } Reader;
 
-Reader* Reader_create(size_t time_int, int core_quantity);
+Reader* Reader_create(double time_int, int core_quantity);
 void Reader_destroy(Reader* rd);
-size_t Reader_get_time(Reader* rd);
+double Reader_get_time(Reader* rd);
 int Reader_get_core_quantity(Reader* rd);
 void* reader_thread(void* args);
 
 
-Reader* Reader_create(size_t time_int, int core_quantity){
+Reader* Reader_create(double time_int, int core_quantity){
     Reader* rd = malloc(sizeof(*rd));
     *rd = (Reader){ .time_interv = time_int,
                     .core_quantity = core_quantity};
@@ -36,7 +36,7 @@ void Reader_destroy(Reader* rd){
 }
 
 
-size_t Reader_get_time(Reader* rd){
+double Reader_get_time(Reader* rd){
     return rd->time_interv;
 }
 
@@ -48,7 +48,7 @@ void* reader_thread(void* args){
     Reader_Utils* utils = *(Reader_Utils**)args;
     Buffer* buffer = Reader_Utils_get_buffer(utils);
     Reader* reader = Reader_Utils_get_reader(utils);
-    size_t time_interv = Reader_get_time(reader);
+    double time_interv = Reader_get_time(reader);
     int lines_to_read = Reader_get_core_quantity(reader) + 1;
     FILE* file;
     while(true){
@@ -56,23 +56,21 @@ void* reader_thread(void* args){
         Buffer_lock(buffer);
         for(int i = 0; i < lines_to_read; ++i){
             if (Buffer_is_full(buffer)){
-                printf("\t Magazyn pelen, czekam na miejsce\n");
-                fclose(file);
-                return NULL;
                 Buffer_wait_for_consumer(buffer);
             } else {
                 char line[MAX_SIZE];
                 fgets(line,MAX_SIZE,file);
                 Pack* pc = Pack_create(line);
                 Buffer_put(buffer,pc);
-                printf("\t Jest miejsce, odkladam paczke \n");
                 Pack_destroy(pc);
             }
         }
         Buffer_call_consumer(buffer);
         Buffer_unlock(buffer);
-        printf("\t Wychodze z magazynu\n");
+        printf("SLEEPING!\n");
+        sleep(time_interv);
         fclose(file);
+        return NULL;
 
     }
     return NULL;
