@@ -5,8 +5,9 @@
 #include <time.h>
 #include <stdbool.h>
 #include <string.h>
-#include "../headers/buffer.h"
 #include "../headers/reader.h"
+#include "../headers/analyzer.h"
+#include "../headers/buffer.h"
 #include "../headers/utils.h"
 
 //Utils przechowuje pointery na używane struct pointery, tak by można było bezpiecznie przekazać kilka argumentów do wątków
@@ -38,4 +39,17 @@ Reader_Utils* Reader_Utils_create(Buffer** bf,Reader** rd){
 
 void Reader_Utils_destroy(Reader_Utils* utils){
     free(utils);
+}
+
+typedef struct Analyzer_Utils{
+    Buffer** bf;
+    Analyzer** al;
+} Analyzer_Utils;
+
+Analyzer_Utils* Analyzer_Utils_create(Buffer** bf, Analyzer** al){
+    Analyzer_Utils* al = malloc(sizeof(*al));
+    *al = (Analyzer_Utils){ .bf = bf,
+                            .al = al
+    };
+    return al;
 }

@@ -4,7 +4,8 @@
         "buffer.h": "c",
         "unistd.h": "c",
         "reader.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "analyzer.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

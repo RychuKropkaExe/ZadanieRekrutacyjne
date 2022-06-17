@@ -5,8 +5,8 @@
 #include <time.h>
 #include <stdbool.h>
 #include <string.h>
-#include "../headers/buffer.h"
 #include "../headers/reader.h"
+#include "../headers/buffer.h"
 #include "../headers/utils.h"
 //Maksymalna ilość bajtów w paczce, jedna linia z /proc/stat nie przekroczy tej wartości
 //A taki rozmiar, jest raczej bardzo pesymistycznym górnym ograniczeniem
@@ -51,6 +51,7 @@ void* reader_thread(void* args){
     double time_interv = Reader_get_time(reader);
     int lines_to_read = Reader_get_core_quantity(reader) + 1;
     FILE* file;
+    Pack* pc;
     while(true){
         file = fopen("/proc/stat","r");
         Buffer_lock(buffer);
@@ -60,18 +61,15 @@ void* reader_thread(void* args){
             } else {
                 char line[MAX_SIZE];
                 fgets(line,MAX_SIZE,file);
-                Pack* pc = Pack_create(line);
+                pc = Pack_create(line);
                 Buffer_put(buffer,pc);
                 Pack_destroy(pc);
             }
         }
         Buffer_call_consumer(buffer);
         Buffer_unlock(buffer);
-        printf("SLEEPING!\n");
-        sleep(time_interv);
         fclose(file);
-        return NULL;
-
+        sleep(time_interv);
     }
     return NULL;
 
