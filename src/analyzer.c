@@ -69,7 +69,7 @@ void* analyzer_thread(void* args){
                 Buffer_wait_for_producer(buffer);
             }   
 
-            char cpu_name[25];
+            char cpu_name[16];
             (void)cpu_name;
             char line[256];
 
