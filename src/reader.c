@@ -13,18 +13,18 @@
 #define MAX_SIZE 256
 
 typedef struct Reader{
-    double time_interv;
+    int time_interv;
     int core_quantity;
 } Reader;
 
-Reader* Reader_create(double time_int, int core_quantity);
+Reader* Reader_create(int time_int, int core_quantity);
 void Reader_destroy(Reader* rd);
-double Reader_get_time(Reader* rd);
+int Reader_get_time(Reader* rd);
 int Reader_get_core_quantity(Reader* rd);
 void* reader_thread(void* args);
 
 
-Reader* Reader_create(double time_int, int core_quantity){
+Reader* Reader_create(int time_int, int core_quantity){
     Reader* rd = malloc(sizeof(*rd));
     *rd = (Reader){ .time_interv = time_int,
                     .core_quantity = core_quantity};
@@ -36,7 +36,7 @@ void Reader_destroy(Reader* rd){
 }
 
 
-double Reader_get_time(Reader* rd){
+int Reader_get_time(Reader* rd){
     return rd->time_interv;
 }
 
@@ -48,10 +48,10 @@ void* reader_thread(void* args){
     Reader_Utils* utils = *(Reader_Utils**)args;
     Buffer* buffer = Reader_Utils_get_buffer(utils);
     Reader* reader = Reader_Utils_get_reader(utils);
-    double time_interv = Reader_get_time(reader);
+    int time_interv = Reader_get_time(reader);
     int lines_to_read = Reader_get_core_quantity(reader) + 1;
     FILE* file;
-    Pack* pc;
+    Pack* pc = NULL;
     while(true){
         file = fopen("/proc/stat","r");
         Buffer_lock(buffer);
@@ -60,16 +60,19 @@ void* reader_thread(void* args){
                 Buffer_wait_for_consumer(buffer);
             } else {
                 char line[MAX_SIZE];
-                fgets(line,MAX_SIZE,file);
+                if(fgets(line,MAX_SIZE,file) == NULL) {
+                    perror("ERROR WHILE GETTING LINE FROM FILE");
+                }
                 pc = Pack_create(line);
                 Buffer_put(buffer,pc);
                 Pack_destroy(pc);
+                pc = NULL;
             }
         }
         Buffer_call_consumer(buffer);
         Buffer_unlock(buffer);
         fclose(file);
-        sleep(time_interv);
+        usleep(time_interv);
     }
     return NULL;
 
