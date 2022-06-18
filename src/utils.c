@@ -17,10 +17,24 @@ typedef struct Reader_Utils{
     Reader** rd;
 } Reader_Utils;
 
+typedef struct Analyzer_Utils{
+    Buffer** bf;
+    Analyzer** al;
+    Results_buffer** rbf;
+} Analyzer_Utils;
+
+
 Reader_Utils* Reader_Utils_create(Buffer** bf,Reader** rd);
 void Reader_Utils_destroy(Reader_Utils* utils);
 Buffer* Reader_Utils_get_buffer(Reader_Utils* utils);
 Reader* Reader_Utils_get_reader(Reader_Utils* utils);
+
+Analyzer_Utils* Analyzer_Utils_create(Buffer** bf, Analyzer** al, Results_buffer** rbf);
+Buffer* Analyzer_Utils_get_buffer(Analyzer_Utils* utils);
+Analyzer* Analyzer_Utils_get_analyzer(Analyzer_Utils* utils);
+Results_buffer* Analyzer_Utils_get_Results_buffer(Analyzer_Utils* utils);
+void Analyzer_Utils_destroy(Analyzer_Utils* utils);
+
 
 Buffer* Reader_Utils_get_buffer(Reader_Utils* utils){
     return *(utils->bf);
@@ -41,20 +55,12 @@ void Reader_Utils_destroy(Reader_Utils* utils){
     free(utils);
 }
 
-typedef struct Analyzer_Utils{
-    Buffer** bf;
-    Analyzer** al;
-} Analyzer_Utils;
 
-Analyzer_Utils* Analyzer_Utils_create(Buffer** bf, Analyzer** al);
-Buffer* Analyzer_Utils_get_buffer(Analyzer_Utils* utils);
-Analyzer* Analyzer_Utils_get_analyzer(Analyzer_Utils* utils);
-void Analyzer_Utils_destroy(Analyzer_Utils* utils);
-
-Analyzer_Utils* Analyzer_Utils_create(Buffer** bf, Analyzer** al){
+Analyzer_Utils* Analyzer_Utils_create(Buffer** bf, Analyzer** al, Results_buffer** rbf){
     Analyzer_Utils* ut = malloc(sizeof(*ut));
     *ut = (Analyzer_Utils){ .bf = bf,
-                            .al = al
+                            .al = al,
+                            .rbf = rbf
     };
     return ut;
 }
@@ -65,6 +71,10 @@ Buffer* Analyzer_Utils_get_buffer(Analyzer_Utils* utils){
 
 Analyzer* Analyzer_Utils_get_analyzer(Analyzer_Utils* utils){
     return *(utils->al);
+}
+
+Results_buffer* Analyzer_Utils_get_Results_buffer(Analyzer_Utils* utils){
+    return *(utils->rbf);
 }
 
 void Analyzer_Utils_destroy(Analyzer_Utils* utils){

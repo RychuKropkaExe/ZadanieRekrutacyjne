@@ -12,6 +12,8 @@
 // 20 znaków, dodając do tego string zawierający nazwe cpu, spacje itd zaokrąglamy do 256 charów
 #define PACK_SIZE 256
 
+//Ile pełnych transportów może pomieścić buffer
+#define BUFFER_CAPACITY 6
 //Wrapper na paczke od analyzera do printera
 typedef struct Pack
 {
@@ -32,6 +34,19 @@ typedef struct Buffer
 
 } Buffer;
 
+//Buffer współdzielony pomiędzy analyzerem i printerem,FAM jest po to, że urządzenie może mieć różną ilość rdzeni,
+//A chcielibyśmy jednorazowo przesyłać informacje o zużyciu wszystkich procesorów na raz
+typedef struct Results_buffer{
+    size_t size;
+    size_t head;
+    size_t tail;
+    size_t max_size;
+    pthread_mutex_t mutex;
+    pthread_cond_t can_produce;
+    pthread_cond_t can_consume;
+    double buffer[]; //FAM
+} Results_buffer;
+
 Buffer* Buffer_create(size_t buffer_size);
 void Buffer_destroy(Buffer* bf);
 bool Buffer_is_full(const Buffer* bf);
@@ -47,16 +62,31 @@ void Buffer_wait_for_consumer(Buffer* bf);
 Pack* Pack_create(char content[]);
 char* Pack_get_content(Pack* pc);
 
+
+Results_buffer* Results_buffer_create(size_t buffer_size);
+void Results_buffer_destroy(Results_buffer* bf);
+bool Results_buffer_is_full(const Results_buffer* bf);
+bool Results_buffer_is_empty(const Results_buffer* bf);
+void Results_buffer_put(Results_buffer* bf, double value);
+double Results_buffer_get(Results_buffer* bf);
+void Results_buffer_lock(Results_buffer* bf);
+void Results_buffer_unlock(Results_buffer* bf);
+void Results_buffer_call_producer(Results_buffer* bf);
+void Results_buffer_call_consumer(Results_buffer* bf);
+void Results_buffer_wait_for_producer(Results_buffer* bf);
+void Results_buffer_wait_for_consumer(Results_buffer* bf);
+
+
+
 Buffer* Buffer_create(size_t buffer_size)
 {
-
-    Buffer* buffer = malloc(sizeof(*buffer) + sizeof(Pack)*buffer_size*6);
+    Buffer* buffer = malloc(sizeof(*buffer) + sizeof(Pack)*buffer_size*BUFFER_CAPACITY);
     if (buffer == NULL)
         return NULL;
     buffer->size = 0;
     buffer->head = 0;
     buffer->tail = 0;
-    buffer->max_size = buffer_size*6;
+    buffer->max_size = buffer_size*BUFFER_CAPACITY;
     pthread_mutex_init(&(buffer->mutex),NULL);
     pthread_cond_init(&(buffer->can_consume), NULL);
     pthread_cond_init(&(buffer->can_produce), NULL);
@@ -147,3 +177,86 @@ char* Pack_get_content(Pack* pc){
     return pc->pack;
 }
 
+
+
+
+Results_buffer* Results_buffer_create(size_t buffer_size)
+{
+
+    Results_buffer* Results_buffer = malloc(sizeof(*Results_buffer) + sizeof(double)*buffer_size*BUFFER_CAPACITY);
+    if (Results_buffer == NULL)
+        return NULL;
+    Results_buffer->size = 0;
+    Results_buffer->head = 0;
+    Results_buffer->tail = 0;
+    Results_buffer->max_size = buffer_size*BUFFER_CAPACITY;
+    pthread_mutex_init(&(Results_buffer->mutex),NULL);
+    pthread_cond_init(&(Results_buffer->can_consume), NULL);
+    pthread_cond_init(&(Results_buffer->can_produce), NULL);
+    return Results_buffer;
+}
+
+void Results_buffer_destroy(Results_buffer* bf)
+{
+    pthread_cond_destroy(&bf->can_consume);
+    pthread_cond_destroy(&bf->can_produce);
+    pthread_mutex_destroy(&bf->mutex);
+
+    free(bf);
+}
+
+bool Results_buffer_is_full(const Results_buffer* bf)
+{
+    return bf->size == bf->max_size;
+}
+
+bool Results_buffer_is_empty(const Results_buffer* bf)
+{
+    return bf->size == 0;
+}
+
+void Results_buffer_put(Results_buffer* bf, double value)
+{
+    bf->buffer[bf->head] = value;
+    bf->head = (bf->head + 1) % bf->max_size;
+    ++bf->size;
+}
+
+double Results_buffer_get(Results_buffer* bf)
+{
+    double value = bf->buffer[bf->tail];
+    bf->tail = (bf->tail + 1) % bf->max_size;
+    --bf->size;
+
+    return value;
+}
+
+void Results_buffer_lock(Results_buffer* bf)
+{
+    pthread_mutex_lock(&bf->mutex);
+}
+
+void Results_buffer_unlock(Results_buffer* bf)
+{
+    pthread_mutex_unlock(&bf->mutex);
+}
+
+void Results_buffer_call_producer(Results_buffer* bf)
+{
+    pthread_cond_signal(&bf->can_produce);
+}
+
+void Results_buffer_call_consumer(Results_buffer* bf)
+{
+    pthread_cond_signal(&bf->can_consume);
+}
+
+void Results_buffer_wait_for_producer(Results_buffer* bf)
+{
+    pthread_cond_wait(&bf->can_consume, &bf->mutex);
+}
+
+void Results_buffer_wait_for_consumer(Results_buffer* bf)
+{
+    pthread_cond_wait(&bf->can_produce, &bf->mutex);
+}
