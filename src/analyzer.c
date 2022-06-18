@@ -112,8 +112,5 @@ void* analyzer_thread(void* args){
         }
         Results_buffer_call_consumer(results_buffer);
         Results_buffer_unlock(results_buffer);
-        for(int i = 0; i < core_quantity +1; ++i){
-            printf("%lf\n", Results_buffer_get(results_buffer));
-        }
     }
 }
