@@ -48,7 +48,7 @@ EXEC := tracker
 # By default use gcc
 CC ?= gcc
 
-C_FLAGS := -Wall -Wextra -mavx
+C_FLAGS := -Wall -Wextra -mavx -pthread
 
 DEP_FLAGS := -MMD -MP
 
