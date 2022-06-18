@@ -10,7 +10,7 @@
 #include "../headers/buffer.h"
 #include "../headers/utils.h"
 
-//Utils przechowuje pointery na używane struct pointery, tak by można było bezpiecznie przekazać kilka argumentów do wątków
+//Wrapery które są przekazywane do poszczególnych wątków
 
 typedef struct Reader_Utils{
     Buffer** bf;
@@ -46,10 +46,27 @@ typedef struct Analyzer_Utils{
     Analyzer** al;
 } Analyzer_Utils;
 
+Analyzer_Utils* Analyzer_Utils_create(Buffer** bf, Analyzer** al);
+Buffer* Analyzer_Utils_get_buffer(Analyzer_Utils* utils);
+Analyzer* Analyzer_Utils_get_analyzer(Analyzer_Utils* utils);
+void Analyzer_Utils_destroy(Analyzer_Utils* utils);
+
 Analyzer_Utils* Analyzer_Utils_create(Buffer** bf, Analyzer** al){
-    Analyzer_Utils* al = malloc(sizeof(*al));
-    *al = (Analyzer_Utils){ .bf = bf,
+    Analyzer_Utils* ut = malloc(sizeof(*ut));
+    *ut = (Analyzer_Utils){ .bf = bf,
                             .al = al
     };
-    return al;
+    return ut;
+}
+
+Buffer* Analyzer_Utils_get_buffer(Analyzer_Utils* utils){
+    return *(utils->bf);
+}
+
+Analyzer* Analyzer_Utils_get_analyzer(Analyzer_Utils* utils){
+    return *(utils->al);
+}
+
+void Analyzer_Utils_destroy(Analyzer_Utils* utils){
+    free(utils);
 }
