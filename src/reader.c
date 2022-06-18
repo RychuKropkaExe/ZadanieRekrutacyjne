@@ -48,11 +48,14 @@ void* reader_thread(void* args){
     Reader_Utils* utils = *(Reader_Utils**)args;
     Buffer* buffer = Reader_Utils_get_buffer(utils);
     Reader* reader = Reader_Utils_get_reader(utils);
-    int time_interv = Reader_get_time(reader);
+
+    unsigned int time_interv = (unsigned int)Reader_get_time(reader);
     int lines_to_read = Reader_get_core_quantity(reader) + 1;
+    
     FILE* file;
     Pack* pc = NULL;
-    while(true){
+
+    while(true) {
         file = fopen("/proc/stat","r");
         Buffer_lock(buffer);
         for(int i = 0; i < lines_to_read; ++i){
@@ -75,5 +78,4 @@ void* reader_thread(void* args){
         usleep(time_interv);
     }
     return NULL;
-
 }

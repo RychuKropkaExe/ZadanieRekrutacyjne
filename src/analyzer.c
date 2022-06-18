@@ -11,7 +11,6 @@
 
 
 typedef struct Analyzer{
-    int core_quantity;
     double user;
     double nice;
     double system;
@@ -22,6 +21,8 @@ typedef struct Analyzer{
     double steal;
     double guest;
     double guest_nice;
+    int core_quantity;
+    char pad[4];
 } Analyzer;
 
 Analyzer* Analyzer_create(int core_quantity);
@@ -53,27 +54,29 @@ void* analyzer_thread(void* args){
     int core_quantity = Analyzer_get_core_quantity(analyzer);
 
     double prev_total[core_quantity+1];
-    memset(prev_total,0,sizeof(double)*(core_quantity+1));
+    memset(prev_total,0,sizeof(double)*((size_t)core_quantity+1));
     double prev_idle[core_quantity+1];
-    memset(prev_idle,0,sizeof(double)*(core_quantity+1));
+    memset(prev_idle,0,sizeof(double)*((size_t)core_quantity+1));
 
     double cpu_usages[core_quantity+1];
-    memset(cpu_usages,0,sizeof(double)*(core_quantity+1));
+    memset(cpu_usages,0,sizeof(double)*((size_t)core_quantity+1));
 
     bool enough_data = false;
 
-    while(true){
+    while(true) {
         Buffer_lock(buffer);
-        for(int i = 0; i < core_quantity + 1; ++i){
-            if (Buffer_is_empty(buffer)){
+        if (Buffer_is_empty(buffer)){
                 Buffer_wait_for_producer(buffer);
-            }   
-
+        }  
+        for(int i = 0; i < core_quantity + 1; ++i){ 
+            if (Buffer_is_empty(buffer)){
+                printf("UNCOMPLETE PACKAGE, ABORT!\n");
+            }  
             char cpu_name[16];
             (void)cpu_name;
             char line[256];
-
-            memcpy(&line[0],Buffer_get(buffer),256);
+            char* buffer_get = Buffer_get(buffer);
+            memcpy(&line[0],buffer_get,256);
             sscanf( line,
                     "%s %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", cpu_name,
                     &(analyzer->user),
@@ -97,7 +100,8 @@ void* analyzer_thread(void* args){
                 cpu_usages[i] =  ((double)delta/(double)totald) * 100;
             }
             prev_total[i] = total;
-            prev_idle[i] = Idle;           
+            prev_idle[i] = Idle;
+            free(buffer_get);           
         }
         enough_data = true;
         Buffer_call_producer(buffer);
@@ -113,4 +117,6 @@ void* analyzer_thread(void* args){
         Results_buffer_call_consumer(results_buffer);
         Results_buffer_unlock(results_buffer);
     }
+    return NULL;
 }
+

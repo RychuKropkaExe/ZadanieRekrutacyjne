@@ -260,3 +260,4 @@ void Results_buffer_wait_for_consumer(Results_buffer* bf)
 {
     pthread_cond_wait(&bf->can_produce, &bf->mutex);
 }
+

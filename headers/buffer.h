@@ -45,3 +45,4 @@
     void Results_buffer_wait_for_producer(Results_buffer* bf);
     void Results_buffer_wait_for_consumer(Results_buffer* bf);
 #endif
+
