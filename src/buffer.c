@@ -19,6 +19,17 @@ typedef struct Pack
 {
     char pack[PACK_SIZE];
 } Pack;
+
+//Magazyn dla wątków Readera i Analyzera, by mogły przechowywać paczki, bez konieczności przetwarzania na bieżąco tego co
+//Dostały
+//Note: Operujemy na nim jak na ringed bufferze, ponieważ bezpośrednie odwoływanie się do elementu w tablicy nieznanego rozmiaru
+//Nie jest bezpieczne
+typedef struct Local_storage{
+    size_t size;
+    size_t head;
+    size_t tail;
+    Pack storage[]; //FAM
+} Local_storage;
 //Buffer współdzielony pomiędzy readerem i Analyzerem, FAM jest po to, że urządzenie może mieć różną ilość rdzeni
 //a chcielibyśmy móc przechowywać określoną ilość Paczek(docelowo pewną wielokrotność jedengo transportu) w bufferze
 typedef struct Buffer
@@ -52,15 +63,20 @@ void Buffer_destroy(Buffer* bf);
 bool Buffer_is_full(const Buffer* bf);
 bool Buffer_is_empty(const Buffer* bf);
 void Buffer_put(Buffer* bf, Pack* product);
-char* Buffer_get(Buffer* bf);
+Pack* Buffer_get(Buffer* bf);
 void Buffer_lock(Buffer* bf);
 void Buffer_unlock(Buffer* bf);
 void Buffer_call_producer(Buffer* bf);
 void Buffer_call_consumer(Buffer* bf);
 void Buffer_wait_for_producer(Buffer* bf);
 void Buffer_wait_for_consumer(Buffer* bf);
+
+
+
 Pack* Pack_create(char content[]);
 char* Pack_get_content(Pack* pc);
+void Pack_destroy(Pack* pc);
+
 
 
 Results_buffer* Results_buffer_create(size_t buffer_size);
@@ -77,6 +93,12 @@ void Results_buffer_wait_for_producer(Results_buffer* bf);
 void Results_buffer_wait_for_consumer(Results_buffer* bf);
 
 
+Local_storage* Local_storage_create(size_t size);
+void Local_storage_put(Local_storage* ls, Pack* pack);
+Pack* Local_storage_get(Local_storage* ls);
+void Local_storage_destroy(Local_storage* ls);
+
+int Log_message(Buffer* logger, char msg[static 1]);
 
 Buffer* Buffer_create(size_t buffer_size)
 {
@@ -119,14 +141,14 @@ void Buffer_put(Buffer* bf, Pack* pack)
     ++bf->size;
 }
 
-char* Buffer_get(Buffer* bf)
+Pack* Buffer_get(Buffer* bf)
 {
     Pack* pack = malloc(sizeof(Pack));
     *pack = bf->buffer[bf->tail];
     bf->tail = (bf->tail + 1) % bf->max_size;
     --bf->size;
 
-    return Pack_get_content(pack);
+    return pack;
 }
 
 void Buffer_lock(Buffer* bf)
@@ -159,6 +181,8 @@ void Buffer_wait_for_consumer(Buffer* bf)
     pthread_cond_wait(&bf->can_produce, &bf->mutex);
 }
 
+
+
 Pack* Pack_create(char content[]){
     Pack* pc = malloc(sizeof(*pc));
     if (pc == NULL)
@@ -176,7 +200,6 @@ void Pack_destroy(Pack* pc)
 char* Pack_get_content(Pack* pc){
     return pc->pack;
 }
-
 
 
 
@@ -259,5 +282,50 @@ void Results_buffer_wait_for_producer(Results_buffer* bf)
 void Results_buffer_wait_for_consumer(Results_buffer* bf)
 {
     pthread_cond_wait(&bf->can_produce, &bf->mutex);
+}
+
+
+
+Local_storage* Local_storage_create(size_t size){
+    Local_storage* ls = malloc(sizeof(*ls) + sizeof(Pack)*size);
+    ls->size=size;
+    ls->head=0;
+    ls->tail=0;
+    return ls;
+}
+
+void Local_storage_put(Local_storage* ls, Pack* pack){
+    ls->storage[ls->head] = *pack;
+    ls->head = (ls->head + 1) % ls->size;
+}
+
+Pack* Local_storage_get(Local_storage* ls){
+    Pack* pack = malloc(sizeof(Pack));
+    *pack = ls->storage[ls->tail];
+    ls->tail = (ls->tail + 1) % ls->size;
+
+    return pack;
+}
+
+void Local_storage_destroy(Local_storage* ls){
+    free(ls);
+}
+
+
+int Log_message(Buffer* logger, char msg[static 1]){
+    if(strlen(msg) > PACK_SIZE){
+        return -1;
+    }
+    Pack* log = NULL;
+    log = Pack_create(msg);
+    Buffer_lock(logger);
+    if(Buffer_is_full(logger)){
+        Buffer_wait_for_consumer(logger);
+    }
+    Buffer_put(logger,log);
+    Buffer_call_consumer(logger);
+    Buffer_unlock(logger);
+    Pack_destroy(log);
+    return 0;
 }
 

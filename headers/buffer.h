@@ -11,14 +11,14 @@
     typedef struct Pack Pack;
     typedef struct Buffer Buffer;
     typedef struct Results_buffer Results_buffer;
-
+    typedef struct Local_storage Local_storage;
     
     Buffer* Buffer_create(size_t buffer_size);
     void Buffer_destroy(Buffer* bf);
     bool Buffer_is_full(const Buffer* bf);
     bool Buffer_is_empty(const Buffer* bf);
     void Buffer_put(Buffer* bf, Pack* product);
-    char* Buffer_get(Buffer* bf);
+    Pack* Buffer_get(Buffer* bf);
     void Buffer_lock(Buffer* bf);
     void Buffer_unlock(Buffer* bf);
     void Buffer_call_producer(Buffer* bf);
@@ -44,5 +44,12 @@
     void Results_buffer_call_consumer(Results_buffer* bf);
     void Results_buffer_wait_for_producer(Results_buffer* bf);
     void Results_buffer_wait_for_consumer(Results_buffer* bf);
+
+    Local_storage* Local_storage_create(size_t size);
+    void Local_storage_put(Local_storage* ls, Pack* pack);
+    Pack* Local_storage_get(Local_storage* ls);
+    void Local_storage_destroy(Local_storage* ls);
+
+    int Log_message(Buffer* logger, char msg[static 1]);
 #endif
 
