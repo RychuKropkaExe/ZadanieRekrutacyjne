@@ -22,30 +22,32 @@ int main(){
 
 
     Buffer* bf = Buffer_create((size_t)core_quantity+1);
-    Buffer* logger = Buffer_create(1);
+    Buffer* log = Buffer_create(20);
 
     Reader* rd = Reader_create(time_interv, core_quantity);
-    Reader_Utils* reader_utils = Reader_Utils_create(bf, logger, rd);
+    Reader_Utils* reader_utils = Reader_Utils_create(bf, log, rd);
 
     Analyzer* al = Analyzer_create(core_quantity);
     Results_buffer* rbf = Results_buffer_create((size_t)core_quantity+1);
-    Analyzer_Utils* analyzer_utils = Analyzer_Utils_create(bf,logger, al,rbf);
+    Analyzer_Utils* analyzer_utils = Analyzer_Utils_create(bf,log, al,rbf);
 
-    Printer_Utils* printer_utils = Printer_Utils_create(rbf, logger, core_quantity);
+    Printer_Utils* printer_utils = Printer_Utils_create(rbf, log, core_quantity);
 
     pthread_t reader, analyzer, printer, logger;
     pthread_create(&reader, NULL, reader_thread, (void*)&reader_utils);
     pthread_create(&analyzer, NULL, analyzer_thread, (void*)&analyzer_utils);
     pthread_create(&printer,NULL, printer_thread, (void*)&printer_utils);
-    pthread_create(&logger,NULL, logger_thread, (void*)&printer_utils);
+    pthread_create(&logger,NULL, logger_thread, (void*)&log);
 
 
     pthread_join(reader, NULL);
     pthread_join(analyzer, NULL);
     pthread_join(printer, NULL);
+    pthread_join(logger,NULL);
 
 
     Buffer_destroy(bf);
+    Buffer_destroy(log);
     Reader_destroy(rd);
     Results_buffer_destroy(rbf);
     Analyzer_destroy(al);
