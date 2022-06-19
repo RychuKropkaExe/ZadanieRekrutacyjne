@@ -6,7 +6,8 @@
         "reader.h": "c",
         "stdio.h": "c",
         "analyzer.h": "c",
-        "types.h": "c"
+        "types.h": "c",
+        "stdlib.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

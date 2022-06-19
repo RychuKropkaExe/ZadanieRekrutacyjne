@@ -47,6 +47,7 @@ int Reader_get_core_quantity(Reader* rd){
 void* reader_thread(void* args){
     Reader_Utils* utils = *(Reader_Utils**)args;
     Buffer* buffer = Reader_Utils_get_buffer(utils);
+    Buffer* logger = Reader_Utils_get_logger(utils);
     Reader* reader = Reader_Utils_get_reader(utils);
 
     unsigned int time_interv = (unsigned int)Reader_get_time(reader);
@@ -57,6 +58,21 @@ void* reader_thread(void* args){
 
     while(true) {
         file = fopen("/proc/stat","r");
+        if(file == NULL){
+            printf("ERROR WHILE OPENING A FILE!\n");
+        }
+
+
+        Buffer_lock(logger);
+        if(Buffer_is_full(logger)){
+            Buffer_wait_for_consumer(logger);
+        }
+        Pack* pc = Pack_create("[READER]SUCCESSFULLY OPENED FILE");
+        Buffer_put(logger,pc);
+        Buffer_call_consumer(logger);
+        Buffer_unlock(logger);
+
+
         Buffer_lock(buffer);
         for(int i = 0; i < lines_to_read; ++i){
             if (Buffer_is_full(buffer)){
@@ -74,6 +90,14 @@ void* reader_thread(void* args){
         }
         Buffer_call_consumer(buffer);
         Buffer_unlock(buffer);
+        Buffer_lock(logger);
+        if(Buffer_is_full(logger)){
+            Buffer_wait_for_consumer(logger);
+        }
+        Pack* pc = Pack_create("[READER]SENT PACKAGE");
+        Buffer_put(logger,pc);
+        Buffer_call_consumer(logger);
+        Buffer_unlock(logger);
         fclose(file);
         usleep(time_interv);
     }
