@@ -51,55 +51,55 @@ void* reader_thread(void* args){
     Reader* reader = Reader_Utils_get_reader(utils);
 
     unsigned int time_interv = (unsigned int)Reader_get_time(reader);
+
     int lines_to_read = Reader_get_core_quantity(reader) + 1;
     
     FILE* file;
     Pack* pc = NULL;
+    //Pack* log = NULL;
 
-    while(true) {
+    Local_storage* storage = Local_storage_create(lines_to_read);
+
+    Log_message(logger,"[READER][INFO] STARTING THREAD\n");
+
+    while(true){
         file = fopen("/proc/stat","r");
         if(file == NULL){
-            printf("ERROR WHILE OPENING A FILE!\n");
+            Log_message(logger,"[READER][ERROR] COULD NOT OPEN A FILE!\n");
         }
 
+        Log_message(logger,"[READER][INFO] SUCCESSFULLY OPENED FILE\n");
 
-        Buffer_lock(logger);
-        if(Buffer_is_full(logger)){
-            Buffer_wait_for_consumer(logger);
+        for(int i = 0; i < lines_to_read; ++i){
+            char line[MAX_SIZE];
+            if(fgets(line,MAX_SIZE,file) == NULL) {
+                Log_message(logger,"[READER][ERROR] COULD NOT GET LINE FROM FILE\n");
+            }
+            pc = Pack_create(line);
+            Local_storage_put(storage,pc);
+            Pack_destroy(pc);
+            pc = NULL;
         }
-        Pack* pc = Pack_create("[READER]SUCCESSFULLY OPENED FILE");
-        Buffer_put(logger,pc);
-        Buffer_call_consumer(logger);
-        Buffer_unlock(logger);
-
-
         Buffer_lock(buffer);
+        if (Buffer_is_full(buffer)){
+            Buffer_wait_for_consumer(buffer);
+        }
         for(int i = 0; i < lines_to_read; ++i){
             if (Buffer_is_full(buffer)){
-                Buffer_wait_for_consumer(buffer);
-            } else {
-                char line[MAX_SIZE];
-                if(fgets(line,MAX_SIZE,file) == NULL) {
-                    perror("ERROR WHILE GETTING LINE FROM FILE");
-                }
-                pc = Pack_create(line);
-                Buffer_put(buffer,pc);
-                Pack_destroy(pc);
-                pc = NULL;
+                Log_message(logger,"[READE][ERROR] NOT WHOLE TRANSPORT WAAS TAKEN");
             }
+            pc = Local_storage_get(storage);
+            Buffer_put(buffer,pc);
+            Pack_destroy(pc);
         }
         Buffer_call_consumer(buffer);
         Buffer_unlock(buffer);
-        Buffer_lock(logger);
-        if(Buffer_is_full(logger)){
-            Buffer_wait_for_consumer(logger);
-        }
-        Pack* pc = Pack_create("[READER]SENT PACKAGE");
-        Buffer_put(logger,pc);
-        Buffer_call_consumer(logger);
-        Buffer_unlock(logger);
+
+        Log_message(logger,"[READER][INFO] SENT PACKAGE\n");
+        
         fclose(file);
         usleep(time_interv);
     }
+    Local_storage_destroy(storage);
     return NULL;
 }

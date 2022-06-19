@@ -21,6 +21,10 @@ void* printer_thread(void* args) {
     Results_buffer* results_buffer = Printer_Utils_get_Results_buffer(utils);
     int core_quantity = Printer_Utils_get_core_quantity(utils);
 
+    Buffer* logger = Printer_Utils_get_logger(utils);
+
+    Log_message(logger,"[PRINTER][INFO] STARTING THREAD\n");
+
     while(true){
         Results_buffer_lock(results_buffer);
         if(Results_buffer_is_empty(results_buffer)){
@@ -58,6 +62,7 @@ void* printer_thread(void* args) {
         printf("--------------------------------------\n");
         Results_buffer_call_producer(results_buffer);
         Results_buffer_unlock(results_buffer);
+        Log_message(logger,"[PRINTER][INFO] SUCCESSFULY PRINTED DATA\n");
     }
     return NULL;
 }

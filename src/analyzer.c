@@ -47,11 +47,17 @@ void Analyzer_destroy(Analyzer* al){
 void* analyzer_thread(void* args){
 
     Analyzer_Utils* ut = *(Analyzer_Utils**)args;
+
     Buffer* buffer = Analyzer_Utils_get_buffer(ut);
+    Buffer* logger = Analyzer_Utils_get_logger(ut);
+
     Analyzer* analyzer = Analyzer_Utils_get_analyzer(ut);
+
     Results_buffer* results_buffer = Analyzer_Utils_get_Results_buffer(ut);
 
     int core_quantity = Analyzer_get_core_quantity(analyzer);
+
+    Local_storage* storage = Local_storage_create(core_quantity+1);
 
     double prev_total[core_quantity+1];
     memset(prev_total,0,sizeof(double)*((size_t)core_quantity+1));
@@ -61,21 +67,35 @@ void* analyzer_thread(void* args){
     double cpu_usages[core_quantity+1];
     memset(cpu_usages,0,sizeof(double)*((size_t)core_quantity+1));
 
-    bool enough_data = false;
+    bool enough_data = false;  
 
-    while(true) {
+    Pack* pc = NULL;
+    char* buffer_get = NULL;
+    Log_message(logger,"[ANALYZER][INFO] STARTING THREAD\n");
+    while(true){
         Buffer_lock(buffer);
         if (Buffer_is_empty(buffer)){
                 Buffer_wait_for_producer(buffer);
         }  
         for(int i = 0; i < core_quantity + 1; ++i){ 
             if (Buffer_is_empty(buffer)){
-                printf("UNCOMPLETE PACKAGE, ABORT!\n");
-            }  
+                Log_message(logger,"[ANALYZER][ERROR] UNCOMPLETE PACKAGE!\n");
+            }
+            pc = Buffer_get(buffer);
+            Local_storage_put(storage,pc);
+            free(pc);
+            pc = NULL;
+        }
+        Buffer_call_producer(buffer);
+        Buffer_unlock(buffer);
+        Log_message(logger,"[ANALYZER][INFO] SUCCESFULLY TOOK DATA\n");
+        for(int i = 0; i < core_quantity + 1; ++i){
             char cpu_name[16];
             (void)cpu_name;
             char line[256];
-            char* buffer_get = Buffer_get(buffer);
+
+            pc = Local_storage_get(storage);
+            buffer_get = Pack_get_content(pc);
             memcpy(&line[0],buffer_get,256);
             sscanf( line,
                     "%s %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", cpu_name,
@@ -100,13 +120,14 @@ void* analyzer_thread(void* args){
                 cpu_usages[i] =  ((double)delta/(double)totald) * 100;
             }
             prev_total[i] = total;
-            prev_idle[i] = Idle;
-            free(buffer_get);           
+            prev_idle[i] = Idle;  
+            free(pc);
+            pc = NULL;        
         }
+        //free(buffer_get);
         enough_data = true;
-        Buffer_call_producer(buffer);
-        Buffer_unlock(buffer);
-
+        Log_message(logger,"[ANALYZER][INFO] SUCCESFULLY PROCESSED DATA\n");
+        Log_message(logger,"[ANALYZER][INFO] SENDING DATA TO PRINTER\n");
         Results_buffer_lock(results_buffer);
         for(int i = 0; i < core_quantity + 1; ++i) {
             if(Results_buffer_is_full(results_buffer)){
@@ -116,7 +137,9 @@ void* analyzer_thread(void* args){
         }
         Results_buffer_call_consumer(results_buffer);
         Results_buffer_unlock(results_buffer);
+        Log_message(logger,"[ANALYZER][INFO] SUCCESFULLY SENT DATA TO PRITNER\n");
     }
+    Local_storage_destroy(storage);
     return NULL;
 }
 
