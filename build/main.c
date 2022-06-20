@@ -1,19 +1,8 @@
-#include <pthread.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/syscall.h>
-#include <time.h>
 #include <signal.h>
 #include <string.h>
-#include "../headers/buffer.h"
-#include "../headers/reader.h"
 #include "../headers/utils.h"
-#include "../headers/analyzer.h"
-#include "../headers/printer.h"
-#include "../headers/logger.h"
-#include "../headers/watchdog.h"
+
 
 
 int main(){

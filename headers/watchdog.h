@@ -1,5 +1,7 @@
 #ifndef WATCHDOG_G
 #define WATCHDOG_G
+    #include <stdbool.h>
+    
     typedef struct Watchdog Watchdog;
     typedef struct Dog Dog;
 

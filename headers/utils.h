@@ -4,6 +4,9 @@
     #include "../headers/analyzer.h"
     #include "../headers/printer.h"
     #include "../headers/watchdog.h"
+    #include "../headers/logger.h"
+    #include "../headers/buffer.h"
+    
     typedef struct Reader_Utils Reader_Utils;
     typedef struct Analyzer_Utils Analyzer_Utils;
     typedef struct Printer_Utils Printer_Utils;
