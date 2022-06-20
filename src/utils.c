@@ -82,6 +82,7 @@ Watchdog* Watchdog_Utils_get_watchdog(Watchdog_Utils* utils);
 Buffer* Watchdog_Utils_get_buffer(Watchdog_Utils* utils);
 Buffer* Watchdog_Utils_get_logger(Watchdog_Utils* utils);
 Results_buffer* Watchdog_Utils_get_results_buffer(Watchdog_Utils* utils);
+void Watchdog_Utils_destroy(Watchdog_Utils* utils);
 
 
 Reader_Utils* Reader_Utils_create(Buffer* bf,Buffer* logger, Reader* rd, Dog* dog){
@@ -215,7 +216,7 @@ Watchdog* Watchdog_Utils_get_watchdog(Watchdog_Utils* utils){
 }
 
 Buffer* Watchdog_Utils_get_buffer(Watchdog_Utils* utils){
-    return utils->watchdog;
+    return utils->bf;
 }
 
 Buffer* Watchdog_Utils_get_logger(Watchdog_Utils* utils){
@@ -225,4 +226,9 @@ Buffer* Watchdog_Utils_get_logger(Watchdog_Utils* utils){
 Results_buffer* Watchdog_Utils_get_results_buffer(Watchdog_Utils* utils){
     return utils->rbf;
 }
+
+void Watchdog_Utils_destroy(Watchdog_Utils* utils){
+    free(utils);
+}
+
 
