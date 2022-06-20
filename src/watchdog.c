@@ -12,12 +12,14 @@
 #include "../headers/watchdog.h"
 
 #define MAX_STAGNATION 1
-void set_flag();
-bool get_flag();
+
+
+void set_flag(void);
+bool get_flag(void);
 void exit_on_error(char* error);
 void exit_gracefully(int signum);
-static bool flag = true;
 
+static bool flag = true;
 static pthread_once_t once = PTHREAD_ONCE_INIT;
 static pthread_mutex_t mutex;
 
@@ -31,18 +33,18 @@ void exit_on_error(char* error){
     set_flag();
 }
 
-void init() {    
+static void init(void) {    
     pthread_mutex_init(&mutex, NULL);
 }
 
-void set_flag(){
+void set_flag(void){
     pthread_once(&once,init);
     pthread_mutex_lock(&mutex);
     flag = false;
     pthread_mutex_unlock(&mutex);
 }
 
-bool get_flag(){
+bool get_flag(void){
     bool f = false;
     pthread_once(&once,init);
     pthread_mutex_lock(&mutex);
@@ -61,11 +63,12 @@ typedef struct Watchdog{
 
 typedef struct Dog{
     pthread_mutex_t mutex;
+    char pad[6];
     bool flag;
     bool is_alive;
 } Dog;
 
-Watchdog* Watchdog_create();
+Watchdog* Watchdog_create(void);
 Dog* Watchdog_get_reader(Watchdog* wd);
 Dog* Watchdog_get_analyzer(Watchdog* wd);
 Dog* Watchdog_get_printer(Watchdog* wd);
@@ -85,7 +88,7 @@ void* watchdog_thread(void* args);
 
 
 
-Watchdog* Watchdog_create(){
+Watchdog* Watchdog_create(void){
     Watchdog* watchdog = malloc(sizeof(*watchdog));
 
     Dog* reader = malloc(sizeof(*reader));
@@ -163,11 +166,11 @@ int Dog_attack(Dog* dog){
 }
 
 bool Dog_get_flag(Dog* dog){
-    bool flag = true;
+    bool f = true;
     Dog_lock(dog);
-    flag = dog->flag;
+    f = dog->flag;
     Dog_unlock(dog);
-    return flag;
+    return f;
 }
 
 void Dog_set_flag(Dog* dog){

@@ -12,7 +12,7 @@
 #include "../headers/watchdog.h"
 
 
-//Wrapery które są przekazywane do poszczególnych wątków
+//Wrapery na potrzebne struktury, które są wymagane by wątki spełniały swoje zadania
 typedef struct Reader_Utils{
     Buffer* bf;
     Buffer* logger;
@@ -32,6 +32,7 @@ typedef struct Printer_Utils{
     Results_buffer* rbf;
     Buffer* logger;
     Dog* dog;
+    char pad[4];
     int core_quantity;
 } Printer_Utils;
 

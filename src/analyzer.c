@@ -10,6 +10,7 @@
 #include "../headers/utils.h"
 
 
+//przechowuje czasy z danych od readera
 typedef struct Analyzer{
     double user;
     double nice;
@@ -57,10 +58,11 @@ void* analyzer_thread(void* args){
 
     Dog* dog = Analyzer_Utils_get_dog(ut);
 
-    int core_quantity = Analyzer_get_core_quantity(analyzer);
+    int core_quantity = (int)Analyzer_get_core_quantity(analyzer);
 
-    Local_storage* storage = Local_storage_create(core_quantity+1);
+    Local_storage* storage = Local_storage_create((size_t)core_quantity+1);
 
+    //Tablice do przechowywania poprdzeniego pomiaru
     double prev_total[core_quantity+1];
     memset(prev_total,0,sizeof(double)*((size_t)core_quantity+1));
     double prev_idle[core_quantity+1];
@@ -69,6 +71,7 @@ void* analyzer_thread(void* args){
     double cpu_usages[core_quantity+1];
     memset(cpu_usages,0,sizeof(double)*((size_t)core_quantity+1));
 
+    //prosta flaga, by nie wysyłać danych z pierwszego pomiaru(potrzebujemy różnicy, więc dwóch pomiarów)
     bool enough_data = false;  
 
     Pack* pc = NULL;

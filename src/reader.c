@@ -57,9 +57,8 @@ void* reader_thread(void* args){
     
     FILE* file;
     Pack* pc = NULL;
-    //Pack* log = NULL;
 
-    Local_storage* storage = Local_storage_create(lines_to_read);
+    Local_storage* storage = Local_storage_create((size_t)lines_to_read);
 
     Log_message(logger,"[READER][INFO] STARTING THREAD\n");
 
@@ -67,6 +66,7 @@ void* reader_thread(void* args){
         file = fopen("/proc/stat","r");
         if(file == NULL){
             Log_message(logger,"[READER][ERROR] COULD NOT OPEN A FILE!\n");
+            exit_on_error("[READER][ERROR] COULD NOT OPEN A FILE\n");
             break;
         }
         Log_message(logger,"[READER][INFO] SUCCESSFULLY OPENED FILE\n");

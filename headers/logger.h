@@ -6,3 +6,4 @@
 
     void* logger_thread(void* args);
 #endif
+

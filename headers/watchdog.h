@@ -2,11 +2,11 @@
 #define WATCHDOG_G
     typedef struct Watchdog Watchdog;
     typedef struct Dog Dog;
-    
+
     void exit_on_error(char* error);
     void exit_gracefully(int signum);
 
-    Watchdog* Watchdog_create();
+    Watchdog* Watchdog_create(void);
     Dog* Watchdog_get_reader(Watchdog* wd);
     Dog* Watchdog_get_analyzer(Watchdog* wd);
     Dog* Watchdog_get_printer(Watchdog* wd);
@@ -25,3 +25,4 @@
     void* watchdog_thread(void* args);
 
 #endif
+

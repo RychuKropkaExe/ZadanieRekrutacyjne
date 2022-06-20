@@ -5,10 +5,11 @@
 #include <time.h>
 #include <stdbool.h>
 #include <string.h>
-#include "../headers/reader.h"
-#include "../headers/analyzer.h"
+// #include "../headers/reader.h"
+// #include "../headers/analyzer.h"
 #include "../headers/buffer.h"
 #include "../headers/utils.h"
+#include "../headers/watchdog.h"
 
 void* logger_thread(void* args);
 
@@ -69,3 +70,4 @@ void* logger_thread(void* args){
     fclose(file);
     return NULL;
 }
+
