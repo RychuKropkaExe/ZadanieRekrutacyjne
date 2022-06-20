@@ -32,7 +32,7 @@ L_INC := $(foreach l, $(LIB), -l$l)
 
 
 ifeq ($(CC), clang)
-	C_FLAGS += -Weverything -Wno-vla -Wno-disabled-macro-expansion
+	C_FLAGS += -Weverything -Wno-vla -Wno-float-equal -Wno-disabled-macro-expansion
 endif
 
 GFLAG := no
