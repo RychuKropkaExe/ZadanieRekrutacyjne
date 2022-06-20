@@ -45,7 +45,7 @@
     Buffer* Watchdog_Utils_get_buffer(Watchdog_Utils* utils);
     Buffer* Watchdog_Utils_get_logger(Watchdog_Utils* utils);
     Results_buffer* Watchdog_Utils_get_results_buffer(Watchdog_Utils* utils);
-    
+    void Watchdog_Utils_destroy(Watchdog_Utils* utils);
 
 #endif
 
