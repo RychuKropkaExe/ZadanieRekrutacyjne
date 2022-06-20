@@ -19,15 +19,18 @@ void* printer_thread(void* args);
 void* printer_thread(void* args) {
     Printer_Utils* utils = *(Printer_Utils**)args;
     Results_buffer* results_buffer = Printer_Utils_get_Results_buffer(utils);
+
+    Dog* dog = Printer_Utils_get_dog(utils);
+
     int core_quantity = Printer_Utils_get_core_quantity(utils);
 
     Buffer* logger = Printer_Utils_get_logger(utils);
 
     Log_message(logger,"[PRINTER][INFO] STARTING THREAD\n");
 
-    while(true){
+    while(Dog_get_flag(dog)){
         Results_buffer_lock(results_buffer);
-        if(Results_buffer_is_empty(results_buffer)){
+        if(Results_buffer_is_empty(results_buffer) && Dog_get_flag(dog)){
             Results_buffer_wait_for_producer(results_buffer);
         }
         printf("--------------------------------------\n");
@@ -35,8 +38,13 @@ void* printer_thread(void* args) {
         struct tm tm = *localtime(&t);
         printf("TIME: %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
         for(int i = 0; i < core_quantity + 1; ++i){
-            if(Results_buffer_is_empty(results_buffer))
-                printf("UNCOMPLETE PACKAGE, ABORT!\n");
+            if(Results_buffer_is_empty(results_buffer)){
+                exit_on_error("UNCOMPLETE PACKAGE, ABORT!\n");
+                break;
+            }
+            if(!Dog_get_flag(dog)){
+                break;
+            }
             
             double usage = Results_buffer_get(results_buffer);
 
@@ -62,6 +70,7 @@ void* printer_thread(void* args) {
         printf("--------------------------------------\n");
         Results_buffer_call_producer(results_buffer);
         Results_buffer_unlock(results_buffer);
+        Dog_kick(dog);
         Log_message(logger,"[PRINTER][INFO] SUCCESSFULY PRINTED DATA\n");
     }
     return NULL;

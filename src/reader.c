@@ -49,6 +49,7 @@ void* reader_thread(void* args){
     Buffer* buffer = Reader_Utils_get_buffer(utils);
     Buffer* logger = Reader_Utils_get_logger(utils);
     Reader* reader = Reader_Utils_get_reader(utils);
+    Dog* dog = Reader_Utils_get_dog(utils);
 
     unsigned int time_interv = (unsigned int)Reader_get_time(reader);
 
@@ -62,14 +63,13 @@ void* reader_thread(void* args){
 
     Log_message(logger,"[READER][INFO] STARTING THREAD\n");
 
-    while(true){
+    while(Dog_get_flag(dog)){
         file = fopen("/proc/stat","r");
         if(file == NULL){
             Log_message(logger,"[READER][ERROR] COULD NOT OPEN A FILE!\n");
+            break;
         }
-
         Log_message(logger,"[READER][INFO] SUCCESSFULLY OPENED FILE\n");
-
         for(int i = 0; i < lines_to_read; ++i){
             char line[MAX_SIZE];
             if(fgets(line,MAX_SIZE,file) == NULL) {
@@ -80,13 +80,25 @@ void* reader_thread(void* args){
             Pack_destroy(pc);
             pc = NULL;
         }
+
+        if(!Dog_get_flag(dog)){
+            fclose(file);
+            break;
+        }
+
         Buffer_lock(buffer);
-        if (Buffer_is_full(buffer)){
+        if (Buffer_is_full(buffer) && Dog_get_flag(dog)){
             Buffer_wait_for_consumer(buffer);
+        }
+        if(!Dog_get_flag(dog)){
+            Buffer_unlock(buffer);
+            fclose(file);
+            break;
         }
         for(int i = 0; i < lines_to_read; ++i){
             if (Buffer_is_full(buffer)){
-                Log_message(logger,"[READE][ERROR] NOT WHOLE TRANSPORT WAAS TAKEN");
+                exit_on_error("[READE][ERROR] NOT WHOLE TRANSPORT WAAS TAKEN\n");
+                break;
             }
             pc = Local_storage_get(storage);
             Buffer_put(buffer,pc);
@@ -94,11 +106,11 @@ void* reader_thread(void* args){
         }
         Buffer_call_consumer(buffer);
         Buffer_unlock(buffer);
-
         Log_message(logger,"[READER][INFO] SENT PACKAGE\n");
-        
+        Dog_kick(dog);
         fclose(file);
-        usleep(time_interv);
+        if(Dog_get_flag(dog))
+            usleep(time_interv);
     }
     Local_storage_destroy(storage);
     return NULL;
