@@ -1,100 +1,70 @@
-# SHELL SECTION
-RM := rm -rf
+#STRUKTURA PROJEKTU
+SRC_DIR := ./src
+HEAD_DIR := ./headers
+BUILD_DIR := ./build
+TESTS_DIR := ./tests
 
-# PRETTY PRINTS SECTION
-define print_cc
-	$(if $(Q), @echo "[CC]        $(1)")
-endef
+#KTÓRY 
+MODE := app #Albo app albo test
 
-define print_bin
-	$(if $(Q), @echo "[BIN]       $(1)")
-endef
+#PROJECT FILES
+SRC := $(wildcard $(SRC_DIR)/*.c)
 
-define print_rm
-    $(if $(Q), @echo "[RM]        $(1)")
-endef
-
-# VERBOSE or NOT?
-ifeq ("$(origin V)", "command line")
-	Q :=
+ifeq ($(MODE), test)
+	SRC := $(SRCD) $(wildcard $(TESTS_DIR)/*.c)
+	EXEC := $(TESTS_DIR)/tests
 else
-	Q ?= @
+	SRC := $(SRC) $(wildcard $(BUILD_DIR)/*.c)
+	EXEC := tracker
 endif
 
-# PROJECT TREE
-SDIR := ./src
-IDIR := ./headers
-ADIR := ./build
+#COMPILATION
+OBJ := $(SRC:%.c=%.o)
+DEPS := $(OBJ:%.o=%.d) 
 
-# FILES
-SRC := $(wildcard $(SDIR)/*.c)
-
-ASRC := $(SRC) $(wildcard $(ADIR)/*.c)
-
-AOBJ := $(ASRC:%.c=%.o)
-
-OBJ := $(AOBJ)
-
-DEPS := $(OBJ:%.o=%.d)
-
-LIB_PATH :=
-LIB :=
-
-# EXEC
-EXEC := tracker
-
-# COMPILATOR SECTION
-
-# By default use gcc
 CC ?= gcc
-
-C_FLAGS := -Wall -Wextra -mavx -pthread
-
+C_FLAGS := -Wall -Wextra -Werror
 DEP_FLAGS := -MMD -MP
 
-H_INC := $(foreach d, $(IDIR), -I$d)
+LIB := pthread
+INC := $(foreach h, $(HEAD_DIR), -I$h)
 L_INC := $(foreach l, $(LIB), -l$l)
-L_PATH := $(foreach p, $(LIB_PATH), -L$p)
 
-ifeq ($(CC),clang)
-	C_FLAGS += -Weverything
-else ifneq (, $(filter $(CC), cc gcc))
-	C_FLAGS += -rdynamic
+
+ifeq ($(CC), clang)
+	C_FLAGS += -Weverything -Wno-vla -Wno-disabled-macro-expansion
 endif
 
-ifeq ("$(origin O)", "command line")
-	OPT := -O$(O)
-else
-	OPT := -O3
-endif
+GFLAG := no
 
-ifeq ("$(origin G)", "command line")
-	GGDB := -ggdb$(G)
+ifeq ($(GFLAG), yes)
+	GGDB := -ggdb
 else
 	GGDB :=
 endif
-
-C_FLAGS += $(OPT) $(GGDB) $(DEP_FLAGS)
+C_FLAGS += $(GGDB)
 
 all: $(EXEC)
 
-
-$(EXEC): $(AOBJ)
-	$(call print_bin,$@)
-	$(Q)$(CC) $(C_FLAGS) $(H_INC) $(AOBJ) -o $@ $(L_PATH) $(L_INC)
+$(EXEC): $(OBJ)
+	@echo "[CREATING EXEC]"
+	$(CC) $(C_FLAGS) $(INC) $(OBJ) -o $@ $(L_INC)
 
 %.o:%.c %.d
-	$(call print_cc,$<)
-	$(Q)$(CC) $(C_FLAGS) $(H_INC) -c $< -o $@
+	@echo "[COMPILATION]"
+	$(CC) $(C_FLAGS) $(INC) -c $< -o $@
 
+#CLEAN
 clean:
-	$(call print_rm,EXEC)
-	$(Q)$(RM) $(EXEC)
-	$(call print_rm,OBJ)
-	$(Q)$(RM) $(OBJ)
-	$(call print_rm,DEPS)
-	$(Q)$(RM) $(DEPS)
+	@echo "[CLEANING EXEC]"
+	rm -rf $(EXEC)
+	@echo "[CLEANING OBJECTS]"
+	rm -rf $(OBJ)
+	@echo "[CLEANING DEPENDECIES]"
+	rm -rf $(DEPS)
 
+#DEPS 
 $(DEPS):
 
 include $(wildcard $(DEPS))
+
