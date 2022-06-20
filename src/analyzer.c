@@ -55,6 +55,8 @@ void* analyzer_thread(void* args){
 
     Results_buffer* results_buffer = Analyzer_Utils_get_Results_buffer(ut);
 
+    Dog* dog = Analyzer_Utils_get_dog(ut);
+
     int core_quantity = Analyzer_get_core_quantity(analyzer);
 
     Local_storage* storage = Local_storage_create(core_quantity+1);
@@ -72,14 +74,18 @@ void* analyzer_thread(void* args){
     Pack* pc = NULL;
     char* buffer_get = NULL;
     Log_message(logger,"[ANALYZER][INFO] STARTING THREAD\n");
-    while(true){
+    while(Dog_get_flag(dog)){
         Buffer_lock(buffer);
-        if (Buffer_is_empty(buffer)){
+        if (Buffer_is_empty(buffer) && Dog_get_flag(dog)){
                 Buffer_wait_for_producer(buffer);
         }  
+        if(!Dog_get_flag(dog)){
+            Buffer_unlock(buffer);
+            break;
+        }
         for(int i = 0; i < core_quantity + 1; ++i){ 
             if (Buffer_is_empty(buffer)){
-                Log_message(logger,"[ANALYZER][ERROR] UNCOMPLETE PACKAGE!\n");
+                exit_on_error("[ANALYZER][ERROR] UNCOMPLETE PACKAGE!\n");
             }
             pc = Buffer_get(buffer);
             Local_storage_put(storage,pc);
@@ -89,6 +95,7 @@ void* analyzer_thread(void* args){
         Buffer_call_producer(buffer);
         Buffer_unlock(buffer);
         Log_message(logger,"[ANALYZER][INFO] SUCCESFULLY TOOK DATA\n");
+
         for(int i = 0; i < core_quantity + 1; ++i){
             char cpu_name[16];
             (void)cpu_name;
@@ -124,19 +131,27 @@ void* analyzer_thread(void* args){
             free(pc);
             pc = NULL;        
         }
-        //free(buffer_get);
         enough_data = true;
         Log_message(logger,"[ANALYZER][INFO] SUCCESFULLY PROCESSED DATA\n");
         Log_message(logger,"[ANALYZER][INFO] SENDING DATA TO PRINTER\n");
         Results_buffer_lock(results_buffer);
+        if(Results_buffer_is_full(results_buffer) && Dog_get_flag(dog)){
+            Results_buffer_wait_for_consumer(results_buffer);
+        }
+        if(!Dog_get_flag(dog)){
+            break;
+        }
         for(int i = 0; i < core_quantity + 1; ++i) {
             if(Results_buffer_is_full(results_buffer)){
-                Results_buffer_wait_for_consumer(results_buffer);
+                exit_on_error("[ANALYZER][ERROR] NOT WHOLE TRANSPORT TAKEN!\n");
+                Results_buffer_unlock(results_buffer);
+                break;
             }
             Results_buffer_put(results_buffer, cpu_usages[i]);
         }
         Results_buffer_call_consumer(results_buffer);
         Results_buffer_unlock(results_buffer);
+        Dog_kick(dog);
         Log_message(logger,"[ANALYZER][INFO] SUCCESFULLY SENT DATA TO PRITNER\n");
     }
     Local_storage_destroy(storage);
