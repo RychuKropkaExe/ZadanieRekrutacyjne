@@ -64,7 +64,7 @@ void* logger_thread(void* args){
         free(buffer_get);
         Dog_kick(dog);
     }
-    fwrite("[LOGGER][INFO] LOGS CREATED\n",sizeof(char),strlen("[LOGGER][INFO] LOGS CREATED\n"),file);
+    fwrite("[LOGGER][INFO] LOGS ENDED\n",sizeof(char),strlen("[LOGGER][INFO] LOGS ENDED\n"),file);
     fclose(file);
     return NULL;
 }
