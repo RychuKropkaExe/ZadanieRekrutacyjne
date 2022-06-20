@@ -11,18 +11,18 @@
 #include "../headers/utils.h"
 #include "../headers/watchdog.h"
 
-#define MAX_STAGNATION 2
+#define MAX_STAGNATION 1
 void set_flag();
 bool get_flag();
 void exit_on_error(char* error);
-
+void exit_gracefully(int signum);
 static bool flag = true;
 
 static pthread_once_t once = PTHREAD_ONCE_INIT;
 static pthread_mutex_t mutex;
 
 void exit_gracefully(int signum){
-    printf("SIGTERM CAUGHT\n");
+    printf("SIGTERM CAUGHT %d\n", signum);
     set_flag();
 }
 
@@ -90,8 +90,8 @@ Watchdog* Watchdog_create(){
 
     Dog* reader = malloc(sizeof(*reader));
     pthread_mutex_init(&(reader->mutex),NULL);
-    reader->flag = 1;
-    reader->is_alive = 1;
+    reader->flag = true;
+    reader->is_alive = true;
     watchdog->reader=reader;
 
     Dog* analyzer = malloc(sizeof(*analyzer));
@@ -102,14 +102,14 @@ Watchdog* Watchdog_create(){
 
     Dog* printer = malloc(sizeof(*printer));
     pthread_mutex_init(&(printer->mutex),NULL);
-    printer->flag = 1;
-    printer->is_alive = 1;
+    printer->flag = true;
+    printer->is_alive = true;
     watchdog->printer=printer;
 
     Dog* logger = malloc(sizeof(*logger));
     pthread_mutex_init(&(logger->mutex),NULL);
-    logger->flag = 1;
-    logger->is_alive = 1;
+    logger->flag = true;
+    logger->is_alive = true;
     watchdog->logger=logger;
 
     return watchdog;
@@ -160,9 +160,6 @@ int Dog_attack(Dog* dog){
     } else {
         return 1;
     }
-
-
-
 }
 
 bool Dog_get_flag(Dog* dog){
@@ -198,29 +195,36 @@ void* watchdog_thread(void* args){
     Dog* printer_dog = Watchdog_get_printer(pack);
     Dog* logger_dog = Watchdog_get_logger(pack);
     Log_message(logger,"[WATCHDOG][INFO] STARTING THREAD!\n");
+
+    bool flip = 1;
     while(get_flag()){
-        if (Dog_attack(reader_dog)){
-            Log_message(logger,"[WATCHDOG][ERROR] READER DIDNT RESPOND, ABORTING\n");
-            Watchdog_alarm(pack);
-            break;
+        if(flip){
+            if (Dog_attack(reader_dog)){
+                printf("READER STAGNATION! \n");
+                Watchdog_alarm(pack);
+                break;
+            }
+            if(Dog_attack(analyzer_dog)){
+                printf("ANALYZER STAGNATION! \n");
+                Watchdog_alarm(pack);
+                break;
+            }
+            if(Dog_attack(printer_dog)){
+                printf("PRINTER STAGNATION!\n");
+                Watchdog_alarm(pack);
+                break;
+            }
+            if(Dog_attack(logger_dog)){
+                printf("LOGGER STAGNATION! \n");
+                printf("LOGGER DIDNT RESPOND, ABORTING!\n");
+                Watchdog_alarm(pack);
+                break;
+            }
         }
-        if(Dog_attack(analyzer_dog)){
-            Log_message(logger,"[WATCHDOG][ERROR] ANALYZER DIDNT RESPOND, ABORTING\n");
-            Watchdog_alarm(pack);
-            break;
-        }
-        if(Dog_attack(printer_dog)){
-            Log_message(logger,"[WATCHDOG][ERROR] PRINTER DIDNT RESPOND, ABORTING\n");
-            Watchdog_alarm(pack);
-            break;
-        }
-        if(Dog_attack(logger_dog)){
-            printf("LOGGER DIDNT RESPOND, ABORTING!\n");
-            Watchdog_alarm(pack);
-            break;
-        }
+        flip = !flip;
         sleep(MAX_STAGNATION);
     }
+    Watchdog_alarm(pack);
     Buffer_call_consumer(buffer);
     Buffer_call_consumer(logger);
     Buffer_call_producer(buffer);
