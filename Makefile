@@ -11,7 +11,7 @@ MODE := app #Albo app albo test
 SRC := $(wildcard $(SRC_DIR)/*.c)
 
 ifeq ($(MODE), test)
-	SRC := $(SRCD) $(wildcard $(TESTS_DIR)/*.c)
+	SRC := $(SRC) $(wildcard $(TESTS_DIR)/*.c)
 	EXEC := $(TESTS_DIR)/tests
 else
 	SRC := $(SRC) $(wildcard $(BUILD_DIR)/*.c)
