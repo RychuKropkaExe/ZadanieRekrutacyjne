@@ -74,24 +74,32 @@ Watchdog* Watchdog_create(void){
     Watchdog* watchdog = malloc(sizeof(*watchdog));
 
     Dog* reader = malloc(sizeof(*reader));
+    if(reader == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     pthread_mutex_init(&(reader->mutex),NULL);
     reader->flag = true;
     reader->is_alive = true;
     watchdog->reader=reader;
 
     Dog* analyzer = malloc(sizeof(*analyzer));
+    if(analyzer == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     pthread_mutex_init(&(analyzer->mutex),NULL);
     analyzer->flag = true;
     analyzer->is_alive = true;
     watchdog->analyzer=analyzer;
 
     Dog* printer = malloc(sizeof(*printer));
+    if(printer == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     pthread_mutex_init(&(printer->mutex),NULL);
     printer->flag = true;
     printer->is_alive = true;
     watchdog->printer=printer;
 
     Dog* logger = malloc(sizeof(*logger));
+    if(logger == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     pthread_mutex_init(&(logger->mutex),NULL);
     logger->flag = true;
     logger->is_alive = true;
