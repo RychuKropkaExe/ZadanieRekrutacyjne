@@ -223,6 +223,7 @@ void* watchdog_thread(void* const args){
     Buffer_call_producer(logger);
     Results_buffer_call_consumer(results_buffer);
     Results_buffer_call_producer(results_buffer);
+    printf("WATCHDOG EXITED SUCCESSFUFLY!\n");
     return NULL;
 }
 

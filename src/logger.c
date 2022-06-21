@@ -65,6 +65,7 @@ void* logger_thread(void* const args){
     }
     fwrite("[LOGGER][INFO] LOGS ENDED\n",sizeof(char),strlen("[LOGGER][INFO] LOGS ENDED\n"),file);
     fclose(file);
+    printf("LOGGER EXITED SUCCESSFUFLY!\n");
     return NULL;
 }
 

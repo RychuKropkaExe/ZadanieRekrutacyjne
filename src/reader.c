@@ -110,5 +110,6 @@ void* reader_thread(void* const args){
             usleep(time_interv);
     }
     Local_storage_destroy(storage);
+    printf("READER EXITED SUCCESSFUFLY!\n");
     return NULL;
 }
