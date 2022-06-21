@@ -51,7 +51,7 @@ Zrealizowane podpunkty:
 
 Producent-Consumer problem:
 
-W zadaniu napotykamy na problem współdzielenia zasobu przez wiele wątków, w tym przypadku są to bufory, za pomocą których przekazywane są informację. W moim podejściu skorzystałem z następującego buforu, do komunikacji Reader-Analyzer, a także do komunikacji każdego z wątków z Loggerem:
+W zadaniu napotykamy na problem współdzielenia zasobu przez wiele wątków, w tym przypadku są to bufory, za pomocą których przekazywane są informację. W moim podejściu skorzystałem z następującego buforu, do komunikacji Reader-Analyzer, a także drugiej instancji tej struktury do komunikacji każdego z wątków z Loggerem:
 ```c
 typedef struct Buffer
 {   
@@ -66,7 +66,23 @@ typedef struct Buffer
 
 } Buffer;
 ```
-Zastosowałem tutaj tzw. Flexible array member. 
+
+Analyzer z printerem komunikują się używając drugiego bufora:
+```c
+typedef struct Results_buffer{
+    size_t size;
+    size_t head;
+    size_t tail;
+    size_t max_size;
+    pthread_mutex_t mutex;
+    pthread_cond_t can_produce;
+    pthread_cond_t can_consume;
+    double buffer[]; //FAM
+} Results_buffer;
+```
+By odciążyć sekcje krytyczne reader i analyzer przechowują dane w lokalnych magazynach
+
+
 
 
 
