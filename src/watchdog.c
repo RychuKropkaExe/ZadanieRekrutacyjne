@@ -16,19 +16,18 @@
 
 void set_flag(void);
 bool get_flag(void);
-void exit_on_error(char* error);
-void exit_gracefully(int signum);
+
 
 static bool flag = true;
 static pthread_once_t once = PTHREAD_ONCE_INIT;
 static pthread_mutex_t mutex;
 
-void exit_gracefully(int signum){
+void exit_gracefully(const int signum){
     printf("SIGTERM CAUGHT %d\n", signum);
     set_flag();
 }
 
-void exit_on_error(char* error){
+void exit_on_error(const char error[static 1]){
     printf("%s", error);
     set_flag();
 }
@@ -68,23 +67,6 @@ typedef struct Dog{
     bool is_alive;
 } Dog;
 
-Watchdog* Watchdog_create(void);
-Dog* Watchdog_get_reader(Watchdog* wd);
-Dog* Watchdog_get_analyzer(Watchdog* wd);
-Dog* Watchdog_get_printer(Watchdog* wd);
-Dog* Watchdog_get_logger(Watchdog* wd);
-void Watchdog_destroy(Watchdog* wd);
-void Watchdog_alarm(Watchdog* wt);
-
-
-bool Dog_get_flag(Dog* dog);
-int Dog_attack(Dog* dog);
-void Dog_lock(Dog* dog);
-void Dog_unlock(Dog* dog);
-void Dog_set_flag(Dog* dog);
-void Dog_kick(Dog* dog);
-
-void* watchdog_thread(void* args);
 
 
 
@@ -118,25 +100,25 @@ Watchdog* Watchdog_create(void){
     return watchdog;
 }
 
-Dog* Watchdog_get_reader(Watchdog* wd){
+Dog* Watchdog_get_reader(Watchdog* const wd){
     return wd->reader;
 }
 
-Dog* Watchdog_get_analyzer(Watchdog* wd){
+Dog* Watchdog_get_analyzer(Watchdog* const wd){
     return  wd->analyzer;
 }
 
-Dog* Watchdog_get_printer(Watchdog* wd){
+Dog* Watchdog_get_printer(Watchdog* const wd){
     return wd->printer;
 }
 
-Dog* Watchdog_get_logger(Watchdog* wd){
+Dog* Watchdog_get_logger(Watchdog* const wd){
     return wd->logger;
 }
 
 
 
-void Watchdog_destroy(Watchdog* wd){
+void Watchdog_destroy(Watchdog* const wd){
     free(wd->reader);
     free(wd->analyzer);
     free(wd->printer);
@@ -144,19 +126,19 @@ void Watchdog_destroy(Watchdog* wd){
     free(wd);
 }
 
-void Dog_lock(Dog* dog){
+void Dog_lock(Dog* const dog){
     pthread_mutex_lock(&(dog->mutex));
 }
 
-void Dog_unlock(Dog* dog){
+void Dog_unlock(Dog* const dog){
     pthread_mutex_unlock(&(dog->mutex));
 }
 
-void Dog_kick(Dog* dog){
+void Dog_kick(Dog* const dog){
     dog->is_alive = true;
 }
 
-int Dog_attack(Dog* dog){
+int Dog_attack(Dog* const dog){
     if(dog->is_alive == true){
         dog->is_alive = false;
         return 0;
@@ -165,7 +147,7 @@ int Dog_attack(Dog* dog){
     }
 }
 
-bool Dog_get_flag(Dog* dog){
+bool Dog_get_flag(Dog* const dog){
     bool f = true;
     Dog_lock(dog);
     f = dog->flag;
@@ -173,20 +155,20 @@ bool Dog_get_flag(Dog* dog){
     return f;
 }
 
-void Dog_set_flag(Dog* dog){
+void Dog_set_flag(Dog* const dog){
     Dog_lock(dog);
     dog->flag = false;
     Dog_unlock(dog);
 }
 
-void Watchdog_alarm(Watchdog* wt){
+void Watchdog_alarm(Watchdog* const wt){
     Dog_set_flag(wt->reader);
     Dog_set_flag(wt->analyzer);
     Dog_set_flag(wt->printer);
     Dog_set_flag(wt->logger);
 }
 
-void* watchdog_thread(void* args){
+void* watchdog_thread(void* const args){
     pthread_mutex_init(&mutex,NULL);
     Watchdog_Utils* utils = *(Watchdog_Utils**)args;
     Buffer* buffer = Watchdog_Utils_get_buffer(utils);

@@ -17,34 +17,34 @@ typedef struct Reader{
     int core_quantity;
 } Reader;
 
-Reader* Reader_create(int time_int, int core_quantity);
-void Reader_destroy(Reader* rd);
-int Reader_get_time(Reader* rd);
-int Reader_get_core_quantity(Reader* rd);
-void* reader_thread(void* args);
+// Reader* Reader_create(int time_int, int core_quantity);
+// void Reader_destroy(Reader* rd);
+// int Reader_get_time(Reader* rd);
+// int Reader_get_core_quantity(Reader* rd);
+// void* reader_thread(void* args);
 
 
-Reader* Reader_create(int time_int, int core_quantity){
+Reader* Reader_create(const int time_int, const int core_quantity){
     Reader* rd = malloc(sizeof(*rd));
     *rd = (Reader){ .time_interv = time_int,
                     .core_quantity = core_quantity};
     return rd;
 }
 
-void Reader_destroy(Reader* rd){
+void Reader_destroy(Reader* const rd){
     free(rd);
 }
 
 
-int Reader_get_time(Reader* rd){
+int Reader_get_time(Reader* const rd){
     return rd->time_interv;
 }
 
-int Reader_get_core_quantity(Reader* rd){
+int Reader_get_core_quantity(Reader* const rd){
     return rd->core_quantity;
 }
 
-void* reader_thread(void* args){
+void* reader_thread(void* const args){
     Reader_Utils* utils = *(Reader_Utils**)args;
     Buffer* buffer = Reader_Utils_get_buffer(utils);
     Buffer* logger = Reader_Utils_get_logger(utils);

@@ -26,26 +26,22 @@ typedef struct Analyzer{
     char pad[4];
 } Analyzer;
 
-Analyzer* Analyzer_create(int core_quantity);
-int Analyzer_get_core_quantity(Analyzer* al);
-void* analyzer_thread(void* args);
-void Analyzer_destroy(Analyzer* al);
 
-Analyzer* Analyzer_create(int core_quantity){
+Analyzer* Analyzer_create(const int core_quantity){
     Analyzer* al = malloc(sizeof(*al));
     *al = (Analyzer){   .core_quantity = core_quantity};
     return al;
 }
 
-int Analyzer_get_core_quantity(Analyzer* al){
+int Analyzer_get_core_quantity(Analyzer* const al){
     return al->core_quantity;
 }
 
-void Analyzer_destroy(Analyzer* al){
+void Analyzer_destroy(Analyzer* const al){
     free(al);
 }
 
-void* analyzer_thread(void* args){
+void* analyzer_thread(void* const args){
 
     Analyzer_Utils* ut = *(Analyzer_Utils**)args;
 

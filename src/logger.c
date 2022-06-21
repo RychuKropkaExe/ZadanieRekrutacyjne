@@ -9,9 +9,8 @@
 #include "../headers/utils.h"
 #include "../headers/watchdog.h"
 
-void* logger_thread(void* args);
 
-void* logger_thread(void* args){
+void* logger_thread(void* const args){
     Logger_Utils* utils = *(Logger_Utils**)args;
     Buffer* logger = Logger_Utils_get_logger(utils);
     Dog* dog = Logger_Utils_get_dog(utils);

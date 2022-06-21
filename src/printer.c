@@ -13,10 +13,8 @@
 
 #define HISTOGRAM_WIDTH 20
 
-void* printer_thread(void* args);
 
-
-void* printer_thread(void* args) {
+void* printer_thread(void* const args) {
     Printer_Utils* utils = *(Printer_Utils**)args;
     Results_buffer* results_buffer = Printer_Utils_get_Results_buffer(utils);
 
