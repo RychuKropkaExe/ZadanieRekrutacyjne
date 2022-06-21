@@ -22,6 +22,7 @@ Do poprawnego działania programu potrzebne są minimum wątki 1 (Reader), 2 (An
 przechwytywanie sygnału są opcjonalne, jednak zachęcam do implementacji całości zadania.
 ```
 Kompilacja:
+
 Flagi: 
 ```c
 CC=clang, by kompilować clangiem(domyślnie kompilacja używając gcc)
