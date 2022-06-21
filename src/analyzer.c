@@ -8,7 +8,7 @@
 #include "../headers/analyzer.h"
 #include "../headers/buffer.h"
 #include "../headers/utils.h"
-
+#include "../headers/watchdog.h"
 
 //przechowuje czasy z danych od readera
 typedef struct Analyzer{
@@ -29,6 +29,8 @@ typedef struct Analyzer{
 
 Analyzer* Analyzer_create(const int core_quantity){
     Analyzer* al = malloc(sizeof(*al));
+    if(al == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     *al = (Analyzer){   .core_quantity = core_quantity};
     return al;
 }

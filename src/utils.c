@@ -50,6 +50,8 @@ typedef struct Watchdog_Utils{
 
 Reader_Utils* Reader_Utils_create(Buffer* restrict const bf,Buffer* restrict const logger, Reader* const rd, Dog* const dog){
     Reader_Utils* ut = malloc(sizeof(*ut));
+    if(ut == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     *ut = (Reader_Utils){   .bf = bf,
                             .logger = logger,
                             .dog = dog,
@@ -80,6 +82,8 @@ void Reader_Utils_destroy(Reader_Utils* const utils){
 
 Analyzer_Utils* Analyzer_Utils_create(Buffer* const restrict bf,Buffer* const restrict logger,Analyzer* const al,Results_buffer* const rbf, Dog* const dog){
     Analyzer_Utils* ut = malloc(sizeof(*ut));
+    if(ut == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     *ut = (Analyzer_Utils){ .bf = bf,
                             .logger = logger,
                             .al = al,
@@ -116,6 +120,8 @@ void Analyzer_Utils_destroy(Analyzer_Utils* const utils){
 
 Printer_Utils*  Printer_Utils_create(Results_buffer* const rbf,Buffer* logger, Dog* dog,const int core_quantity) {
     Printer_Utils* utils = malloc(sizeof(*utils));
+    if(utils == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     *utils = (Printer_Utils){   .rbf = rbf,
                                 .logger = logger,
                                 .dog = dog,
@@ -146,6 +152,8 @@ void Printer_Utils_destroy(Printer_Utils* const utils){
 
 Logger_Utils* Logger_Utils_create(Buffer* const logger, Dog* const dog){
     Logger_Utils* utils = malloc(sizeof(*utils));
+    if(utils == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     *utils = (Logger_Utils){    .logger = logger,
                                 .dog = dog
     };
@@ -167,6 +175,8 @@ void Logger_Utils_destroy(Logger_Utils* const utils){
 
 Watchdog_Utils* Watchdog_Utils_create(Watchdog* const watchdog, Buffer* const restrict logger, Buffer* const restrict bf,Results_buffer* const rbf){
     Watchdog_Utils* utils = malloc(sizeof(*utils));
+    if(utils == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     *utils = (Watchdog_Utils){  .logger=logger,
                                 .watchdog=watchdog,
                                 .bf=bf,

@@ -8,6 +8,7 @@
 #include "../headers/reader.h"
 #include "../headers/buffer.h"
 #include "../headers/utils.h"
+#include "../headers/watchdog.h"
 //Maksymalna ilość bajtów w paczce, jedna linia z /proc/stat nie przekroczy tej wartości
 //A taki rozmiar, jest raczej bardzo pesymistycznym górnym ograniczeniem
 #define MAX_SIZE 256
@@ -17,15 +18,11 @@ typedef struct Reader{
     int core_quantity;
 } Reader;
 
-// Reader* Reader_create(int time_int, int core_quantity);
-// void Reader_destroy(Reader* rd);
-// int Reader_get_time(Reader* rd);
-// int Reader_get_core_quantity(Reader* rd);
-// void* reader_thread(void* args);
-
 
 Reader* Reader_create(const int time_int, const int core_quantity){
     Reader* rd = malloc(sizeof(*rd));
+    if(rd == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     *rd = (Reader){ .time_interv = time_int,
                     .core_quantity = core_quantity};
     return rd;

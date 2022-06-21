@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "../headers/buffer.h"
+#include "../headers/watchdog.h"
 
 //Buffer przechowuje paczki wysyłane od readera do analyzera
 // Zakładamy maksymalny rozmiar każdej z liczb z /proc/stat na 8 bajtów, czyli może mieć maksymalnie
@@ -62,8 +63,8 @@ typedef struct Results_buffer{
 Buffer* Buffer_create(const size_t buffer_size)
 {
     Buffer* buffer = malloc(sizeof(*buffer) + sizeof(Pack)*buffer_size*BUFFER_CAPACITY);
-    if (buffer == NULL)
-        return NULL;
+    if(buffer == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     buffer->size = 0;
     buffer->head = 0;
     buffer->tail = 0;
@@ -103,6 +104,8 @@ void Buffer_put(Buffer* const bf, const Pack* const pack)
 Pack* Buffer_get(Buffer* const bf)
 {
     Pack* pack = malloc(sizeof(Pack));
+    if(pack == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     *pack = bf->buffer[bf->tail];
     bf->tail = (bf->tail + 1) % bf->max_size;
     --bf->size;
@@ -144,7 +147,7 @@ void Buffer_wait_for_consumer(Buffer* const bf)
 Pack* Pack_create(const char content[]){
     Pack* pc = malloc(sizeof(*pc));
     if (pc == NULL)
-        return NULL;
+        exit_on_error("MALLOC FAILED!\n");
     *pc = (Pack){.pack = {0}};
     memcpy(&(pc->pack[0]),content,strlen(content)+1);
     return pc;
@@ -246,6 +249,8 @@ void Results_buffer_wait_for_consumer(Results_buffer* const bf)
 
 Local_storage* Local_storage_create(const size_t size){
     Local_storage* ls = malloc(sizeof(*ls) + sizeof(Pack)*size);
+    if(ls == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     ls->size=size;
     ls->head=0;
     ls->tail=0;
@@ -259,6 +264,8 @@ void Local_storage_put(Local_storage* const ls,const Pack* const pack){
 
 Pack* Local_storage_get(Local_storage* const ls){
     Pack* pack = malloc(sizeof(Pack));
+    if(pack == NULL)
+        exit_on_error("MALLOC FAILED!\n");
     *pack = ls->storage[ls->tail];
     ls->tail = (ls->tail + 1) % ls->size;
 
