@@ -51,7 +51,7 @@ Zrealizowane podpunkty:
 
 Producent-Consumer problem:
 
-W zadaniu napotykamy na problem współdzielenia zasobu przez wiele wątków, w tym przypadku są to bufory, za pomocą których przekazywane są informację. W moim podejściu skorzystałem z następującego buforu, do komunikacji Reader-Analyzer, a także drugiej instancji tej struktury do komunikacji każdego z wątków z Loggerem:
+W zadaniu napotykamy na problem współdzielenia zasobu przez wiele wątków, w tym przypadku są to bufory, za pomocą których przekazywane są informację. W moim podejściu skorzystałem z następującego ringed buffera, do komunikacji Reader-Analyzer, a także drugiej instancji tej struktury do komunikacji każdego z wątków z Loggerem:
 ```c
 typedef struct Buffer
 {   
@@ -67,7 +67,7 @@ typedef struct Buffer
 } Buffer;
 ```
 
-Analyzer z printerem komunikują się używając drugiego bufora:
+Analyzer z printerem komunikują się używając drugiego ringed buffer:
 ```c
 typedef struct Results_buffer{
     size_t size;
