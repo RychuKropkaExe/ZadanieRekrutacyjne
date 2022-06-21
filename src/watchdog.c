@@ -209,7 +209,6 @@ void* watchdog_thread(void* const args){
             }
             if(Dog_attack(logger_dog)){
                 printf("LOGGER STAGNATION! \n");
-                printf("LOGGER DIDNT RESPOND, ABORTING!\n");
                 Watchdog_alarm(pack);
                 break;
             }
