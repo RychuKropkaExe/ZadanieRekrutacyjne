@@ -31,10 +31,12 @@ GFLAG=yes, by kompilować z flagą -ggdb3
 Aplikacja:
 ```c
 make
+Wtedy należy uruchomić ją za pomocą ./tracker
 ```
 Testy:
 ```c
 make MODE=test
+Należy je uruchomić za pomocą ./tests/tests
 ```
 Zrealizowane podpunkty:
 
