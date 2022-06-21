@@ -15,7 +15,7 @@ int main(){
 
 
     int core_quantity = (int)sysconf(_SC_NPROCESSORS_ONLN);
-
+    int logger_size = 20;
     int time_interv = 1000000;
 
     Watchdog* pack = Watchdog_create();
@@ -25,7 +25,7 @@ int main(){
     Dog* logger_dog = Watchdog_get_logger(pack);
 
     Buffer* bf = Buffer_create((size_t)core_quantity+1);
-    Buffer* log = Buffer_create(20);
+    Buffer* log = Buffer_create((size_t)logger_size);
 
     Reader* rd = Reader_create(time_interv, core_quantity);
     Reader_Utils* reader_utils = Reader_Utils_create(bf, log, rd, reader_dog);
