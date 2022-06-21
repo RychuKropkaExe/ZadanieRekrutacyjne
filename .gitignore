@@ -1,0 +1,6 @@
+**/*.d
+**/*.o
+build/*.o
+tracker
+.vscode
+logs
