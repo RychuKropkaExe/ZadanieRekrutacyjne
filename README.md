@@ -1,20 +1,10 @@
-# ZadanieRekrutacyjne
 
-Zadanie rekrutacyjne CUT - cpu usage tracker
-Michał Kukowski
-Kwiecień 2021
-1 Wymagania:
-- Projekt musi zostać napisany w języku C. W standardzie C99 lub wyższym. Przy czym należy napisać
-kod tak, aby dało się go skompilować za pomocą gcc jak i clang. Kompilacja nie może zawierać ostrzeżeń!
-(dla clang flaga -Weverything, dla gcc przynajmniej -Wall -Wextra),
-- Projekt musi posiadać system budowania, najlepiej oparty na Makefile lub CMake. System powinien
-wspierać dynamiczne zmiany kompilatora (czytanie zmiennej środowiskowej CC).
-- Projekt musi posiadać system kontroli wersji, najlepiej git. Należy zamieścić ”ładną” historię commitów,
-tak aby pokazać proces powstawania aplikacji,
-- Aplikacja musi działać poprawnie na dowolnej distrybucji linuxa - np Ubuntu, Arch, Fedora, Debian,
-- Aplikacja musi zostać przetestowana pod kątem wycieków pamięci, do tego należy użyć programu
-valgrind
-2 Opis zadania
+Zadanie rekrytacyjne do firmy Tietoevry
+=
+Autor: Józef Melańczuk
+
+Treść:
+```
 Twoim zadaniem jest napisanie prostej aplikacji konsolowej do śledzenia zużycia procesora.
 1. Pierwszy wątek (Reader) czyta /proc/stat i wysyła odczytany ciąg znaków (jako raw data) do wątku
 drugiego (Analyzer)
@@ -30,20 +20,53 @@ Loggera używa się do zapisywania debug printów do pliku w sposób zsynchroniz
 aplikacji (zamknięcie pliku, zwolnienie pamięci, zakończenie wątków)
 Do poprawnego działania programu potrzebne są minimum wątki 1 (Reader), 2 (Analyzer) i 3 (Printer). Zatem należy zaimplementować minimum te funkcjonalności. Wątek 4 (Watchdog) i 5 (Logger) jak i
 przechwytywanie sygnału są opcjonalne, jednak zachęcam do implementacji całości zadania.
-1
-3 Wskazówki
-1. Do obliczania zużycia procesora można użyć tej formuły
-2. Wysyłanie danych pomiędzy wątkami nie trzeba rozumieć dosłownie. Można użyć do tego globalnej
-pamięci (np globalna tablica lub struktura).
-3. Czytanie danych i wysyłanie do innego wątku to problem Producenta i konsumenta. Warto zatem
-poczytać o tym problemie i przeanalizować jego rozwiązania.
-4. Pomyśl o buforowaniu danych, co jeśli wątek czytający z pliku czyta szybciej niż przetwarzający?
-Spróbuj rozwiązać ten problem za pomocą jakieś struktury danych (RingBuffer / Queue)
-5. Wielowątkowość umożliwia nam znana biblioteka pthread lub nakładka na tę bibliotęke wbudowana w
-język C11 i wyżej
-6. Przechwytywanie sygnału SIGTERM może być wzorowane na tym przykładzie
-7. Pamiętaj, że oceniamy nie tylko poprawność ale również styl programowania. Przejrzyj książke Nowoczesne C i zastosuj się do rad zawartych w tej książce. Pamiętaj, że język C jest tylko z pozoru trywialny,
-pobaw się ficzerami C99 takimi jak VLA, FAM, Compund Literals. Jednak pamiętaj, ze skomplikowane
-ficzery języka to broń obosieczna. Zanim czegoś użyjesz poznaj wady i zalety tego rozwiązania
-8. Staraj się napisać kod w duchu paradygmatu obiektowego, zachowaj zasady KISS i SOLID w swoim
-kodzie.
+```
+Kompilacja:
+Flagi: 
+```c
+CC=clang, by kompilować clangiem(domyślnie kompilacja używając gcc)
+GFLAG=yes, by kompilować z flagą -ggdb3
+```
+Aplikacja:
+```c
+make
+```
+Testy:
+```c
+make MODE=test
+```
+Zrealizowane podpunkty:
+
+-Reader
+
+-Analyzer
+
+-Printer
+
+-Logger
+
+-Watchdog
+
+-Przechwytywanie sygnału SIGTERM
+
+Producent-Consumer problem:
+
+W zadaniu napotykamy na problem współdzielenia zasobu przez wiele wątków, w tym przypadku są to bufory, za pomocą których przekazywane są informację. W moim podejściu skorzystałem z następującego buforu, do komunikacji Reader-Analyzer, a także do komunikacji każdego z wątków z Loggerem:
+```c
+typedef struct Buffer
+{   
+    size_t size;
+    size_t head;
+    size_t tail;
+    size_t max_size;
+    pthread_mutex_t mutex;
+    pthread_cond_t can_produce;
+    pthread_cond_t can_consume;
+    Pack buffer[]; //FAM
+
+} Buffer;
+```
+Zastosowałem tutaj tzw. Flexible array member. 
+
+
+
