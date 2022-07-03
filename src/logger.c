@@ -63,9 +63,24 @@ void* logger_thread(void* const args){
         free(buffer_get);
         Dog_kick(dog);
     }
-    fwrite("[LOGGER][INFO] LOGS ENDED\n",sizeof(char),strlen("[LOGGER][INFO] LOGS ENDED\n"),file);
+    sleep(1);
+    Buffer_lock(logger);
+    while(!Buffer_is_empty(logger)){
+        char log[256];
+        pc = Buffer_get(logger);
+        buffer_get = Pack_get_content(pc);
+        memcpy(&log[0],buffer_get,256);
+        fwrite(log,sizeof(char),strlen(log),file);
+        if(fflush(file) != 0){
+            exit_on_error("[LOGGER][ERROR] COULD NOT FLUSH A FILE\n");
+            free(buffer_get);
+            break;
+        }
+        free(buffer_get);
+    }
+    Buffer_unlock(logger);
+    fwrite("[LOGGER][INFO] LOGGER EXITED SUCCESSFUFLY!\n",sizeof(char),strlen("[LOGGER][INFO] LOGGER EXITED SUCCESSFUFLY!\n"),file);
     fclose(file);
-    printf("LOGGER EXITED SUCCESSFUFLY!\n");
     return NULL;
 }
 

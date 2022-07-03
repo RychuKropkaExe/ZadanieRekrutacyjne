@@ -43,7 +43,6 @@ typedef struct Buffer
     pthread_cond_t can_produce;
     pthread_cond_t can_consume;
     Pack buffer[]; //FAM
-
 } Buffer;
 
 //Buffer współdzielony pomiędzy analyzerem i printerem,FAM jest po to, że urządzenie może mieć różną ilość rdzeni,

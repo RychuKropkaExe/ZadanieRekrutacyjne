@@ -5,7 +5,7 @@
 
 
 
-int main(){
+int main(void){
 
     struct sigaction action;
     memset(&action, 0, sizeof(action));

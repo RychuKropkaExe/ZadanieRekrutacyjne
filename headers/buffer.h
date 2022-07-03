@@ -51,5 +51,6 @@
     void Local_storage_destroy(Local_storage* const ls);
 
     int Log_message(Buffer* logger, const char msg[static 1]);
+    
 #endif
 

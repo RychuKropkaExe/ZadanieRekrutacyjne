@@ -156,7 +156,7 @@ void* analyzer_thread(void* const args){
         Log_message(logger,"[ANALYZER][INFO] SUCCESFULLY SENT DATA TO PRITNER\n");
     }
     Local_storage_destroy(storage);
-    printf("ANALYZER EXITED SUCCESSFUFLY!\n");
+    Log_message(logger,"[ANALYZER][INFO] ANALYZER EXITED SUCCESSFUFLY!\n");
     return NULL;
 }
 

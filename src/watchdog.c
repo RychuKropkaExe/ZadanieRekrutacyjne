@@ -193,17 +193,17 @@ void* watchdog_thread(void* const args){
     while(get_flag()){
         if(flip){
             if (Dog_attack(reader_dog)){
-                printf("READER STAGNATION! \n");
+                Log_message(logger, "[WATCHDOG][ERROR] READER STAGNATION! \n");
                 Watchdog_alarm(pack);
                 break;
             }
             if(Dog_attack(analyzer_dog)){
-                printf("ANALYZER STAGNATION! \n");
+                Log_message(logger, "[WATCHDOG][ERROR] ANALYZER STAGNATION! \n");
                 Watchdog_alarm(pack);
                 break;
             }
             if(Dog_attack(printer_dog)){
-                printf("PRINTER STAGNATION!\n");
+                Log_message(logger, "[WATCHDOG][ERROR] PRINTER STAGNATION!\n");
                 Watchdog_alarm(pack);
                 break;
             }
@@ -223,7 +223,7 @@ void* watchdog_thread(void* const args){
     Buffer_call_producer(logger);
     Results_buffer_call_consumer(results_buffer);
     Results_buffer_call_producer(results_buffer);
-    printf("WATCHDOG EXITED SUCCESSFUFLY!\n");
+    Log_message(logger,"[WATCHDOG][INFO] WATCHDOG EXITED SUCCESSFUFLY!\n");
     return NULL;
 }
 

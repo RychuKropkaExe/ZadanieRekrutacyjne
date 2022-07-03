@@ -71,7 +71,7 @@ void* printer_thread(void* const args) {
         Dog_kick(dog);
         Log_message(logger,"[PRINTER][INFO] SUCCESSFULY PRINTED DATA\n");
     }
-    printf("PRINTER EXITED SUCCESSFUFLY!\n");
+    Log_message(logger,"[PRINTER][INFO] PRINTER EXITED SUCCESSFUFLY!\n");
     return NULL;
 }
 
