@@ -35,7 +35,7 @@ void* printer_thread(void* const args) {
         time_t t = time(NULL);
         struct tm tm = *localtime(&t);
         printf("TIME: %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-        for(int i = 0; i < core_quantity + 1; ++i){
+        for(int i = 0; i < core_quantity + 1 && Dog_get_flag(dog); ++i){
             if(Results_buffer_is_empty(results_buffer)){
                 exit_on_error("UNCOMPLETE PACKAGE, ABORT!\n");
                 break;
@@ -61,7 +61,6 @@ void* printer_thread(void* const args) {
             for(int j = 0; j < HISTOGRAM_WIDTH - number_of_blocks; j++){
                 printf(" ");
             }
-
             printf("]");
             printf(" %.1lf %% \n", usage);
         }

@@ -38,8 +38,7 @@ endif
 GFLAG := no
 
 ifeq ($(GFLAG), yes)
-	GGDB := -ggdb3
-	GGDB :=
+	GGDB := -ggdb3 -g
 endif
 C_FLAGS += $(GGDB)
 

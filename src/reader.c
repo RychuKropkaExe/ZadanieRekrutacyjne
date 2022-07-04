@@ -67,7 +67,7 @@ void* reader_thread(void* const args){
             break;
         }
         Log_message(logger,"[READER][INFO] SUCCESSFULLY OPENED FILE\n");
-        for(int i = 0; i < lines_to_read; ++i){
+        for(int i = 0; i < lines_to_read && Dog_get_flag(dog); ++i){
             char line[MAX_SIZE];
             if(fgets(line,MAX_SIZE,file) == NULL) {
                 Log_message(logger,"[READER][ERROR] COULD NOT GET LINE FROM FILE\n");
@@ -92,7 +92,7 @@ void* reader_thread(void* const args){
             fclose(file);
             break;
         }
-        for(int i = 0; i < lines_to_read; ++i){
+        for(int i = 0; i < lines_to_read && Dog_get_flag(dog); ++i){
             if (Buffer_is_full(buffer)){
                 exit_on_error("[READE][ERROR] NOT WHOLE TRANSPORT WAAS TAKEN\n");
                 break;

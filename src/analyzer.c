@@ -84,7 +84,7 @@ void* analyzer_thread(void* const args){
             Buffer_unlock(buffer);
             break;
         }
-        for(int i = 0; i < core_quantity + 1; ++i){ 
+        for(int i = 0; i < core_quantity + 1 && Dog_get_flag(dog); ++i){ 
             if (Buffer_is_empty(buffer)){
                 exit_on_error("[ANALYZER][ERROR] UNCOMPLETE PACKAGE!\n");
             }
@@ -97,7 +97,7 @@ void* analyzer_thread(void* const args){
         Buffer_unlock(buffer);
         Log_message(logger,"[ANALYZER][INFO] SUCCESFULLY TOOK DATA\n");
 
-        for(int i = 0; i < core_quantity + 1; ++i){
+        for(int i = 0; i < core_quantity + 1 && Dog_get_flag(dog); ++i){
             char cpu_name[16];
             (void)cpu_name;
             char line[256];
@@ -139,10 +139,7 @@ void* analyzer_thread(void* const args){
         if(Results_buffer_is_full(results_buffer) && Dog_get_flag(dog)){
             Results_buffer_wait_for_consumer(results_buffer);
         }
-        if(!Dog_get_flag(dog)){
-            break;
-        }
-        for(int i = 0; i < core_quantity + 1; ++i) {
+        for(int i = 0; i < core_quantity + 1 && Dog_get_flag(dog); ++i) {
             if(Results_buffer_is_full(results_buffer)){
                 exit_on_error("[ANALYZER][ERROR] NOT WHOLE TRANSPORT TAKEN!\n");
                 Results_buffer_unlock(results_buffer);
