@@ -1,5 +1,5 @@
 
-Zadanie rekrytacyjne do firmy Tietoevry
+Zadanie rekrutacyjne do firmy Tietoevry
 =
 Autor: Józef Melańczuk
 
