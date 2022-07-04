@@ -4,3 +4,4 @@ build/*.o
 tracker
 .vscode
 logs
+tests/tests
